@@ -214,22 +214,42 @@ namespace DataMatrixCreator
 
         private void buttonGenerate_Click(object sender, EventArgs e)
         {
-            GenerateCodes(textBoxStaticCode.Text,
-                textBoxVariableCodeStart.Text,
-                int.Parse(textBoxNumCodes.Text),
-                float.Parse(textBoxCodeWidth.Text),
-                float.Parse(textBoxCodeHeight.Text),
-                int.Parse(textBoxColumnCount.Text),
-                int.Parse(textBoxRowCount.Text),
-                textBoxFilename.Text,
-                (CodeType)Enum.Parse(typeof(CodeType), comboBoxCodeType.SelectedItem.ToString()),
-                radioButtonDecimal.Checked ? CountType.NumericDecimal : radioButtonHexadecimal.Checked ? CountType.NumericHexadecimal : CountType.Alphabetical,
-                float.Parse(textBoxVerticalMargin.Text),
-                float.Parse(textBoxHorizontalMargin.Text),
-                float.Parse(textBoxTopBorder.Text),
-                float.Parse(textBoxLeftBorder.Text),
-                float.Parse(textBoxRightBorder.Text),
-                float.Parse(textBoxBottomBorder.Text));
+            try
+            {
+                GenerateCodes(textBoxStaticCode.Text,
+                    textBoxVariableCodeStart.Text,
+                    int.Parse(textBoxNumCodes.Text),
+                    float.Parse(textBoxCodeWidth.Text),
+                    float.Parse(textBoxCodeHeight.Text),
+                    int.Parse(textBoxColumnCount.Text),
+                    int.Parse(textBoxRowCount.Text),
+                    textBoxFilename.Text,
+                    (CodeType)Enum.Parse(typeof(CodeType), comboBoxCodeType.SelectedItem.ToString()),
+                    radioButtonDecimal.Checked ? CountType.NumericDecimal : radioButtonHexadecimal.Checked ? CountType.NumericHexadecimal : CountType.Alphabetical,
+                    float.Parse(textBoxVerticalMargin.Text),
+                    float.Parse(textBoxHorizontalMargin.Text),
+                    float.Parse(textBoxTopBorder.Text),
+                    float.Parse(textBoxLeftBorder.Text),
+                    float.Parse(textBoxRightBorder.Text),
+                    float.Parse(textBoxBottomBorder.Text));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Error generating output file: {0} at {1}", ex.Message, ex.StackTrace));
+                return;
+            }
+            DialogResult res = MessageBox.Show("Output generated successfully. Do you want to view the file now?", "Success", MessageBoxButtons.YesNo);
+            if (res == DialogResult.Yes)
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(textBoxFilename.Text);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Error opening file: {0} at {1}", ex.Message, ex.StackTrace));
+                }
+            }
         }
     }
 }

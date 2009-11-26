@@ -104,7 +104,7 @@
             this.textBoxNumCodes.Location = new System.Drawing.Point(113, 247);
             this.textBoxNumCodes.Name = "textBoxNumCodes";
             this.textBoxNumCodes.Size = new System.Drawing.Size(100, 20);
-            this.textBoxNumCodes.TabIndex = 20;
+            this.textBoxNumCodes.TabIndex = 4;
             this.textBoxNumCodes.Text = "100";
             this.textBoxNumCodes.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -124,7 +124,7 @@
             this.radioButtonDecimal.Location = new System.Drawing.Point(131, 119);
             this.radioButtonDecimal.Name = "radioButtonDecimal";
             this.radioButtonDecimal.Size = new System.Drawing.Size(63, 17);
-            this.radioButtonDecimal.TabIndex = 1;
+            this.radioButtonDecimal.TabIndex = 2;
             this.radioButtonDecimal.TabStop = true;
             this.radioButtonDecimal.Text = "Decimal";
             this.radioButtonDecimal.UseVisualStyleBackColor = true;
@@ -145,7 +145,7 @@
             this.radioButtonAlphabetic.Location = new System.Drawing.Point(131, 165);
             this.radioButtonAlphabetic.Name = "radioButtonAlphabetic";
             this.radioButtonAlphabetic.Size = new System.Drawing.Size(75, 17);
-            this.radioButtonAlphabetic.TabIndex = 3;
+            this.radioButtonAlphabetic.TabIndex = 2;
             this.radioButtonAlphabetic.Text = "Alphabetic";
             this.radioButtonAlphabetic.UseVisualStyleBackColor = true;
             // 
@@ -181,7 +181,7 @@
             this.textBoxStaticCode.Location = new System.Drawing.Point(9, 31);
             this.textBoxStaticCode.Name = "textBoxStaticCode";
             this.textBoxStaticCode.Size = new System.Drawing.Size(204, 20);
-            this.textBoxStaticCode.TabIndex = 3;
+            this.textBoxStaticCode.TabIndex = 0;
             this.textBoxStaticCode.Text = "0123456789####";
             this.textBoxStaticCode.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -190,7 +190,7 @@
             this.textBoxVariableCodeStart.Location = new System.Drawing.Point(9, 82);
             this.textBoxVariableCodeStart.Name = "textBoxVariableCodeStart";
             this.textBoxVariableCodeStart.Size = new System.Drawing.Size(204, 20);
-            this.textBoxVariableCodeStart.TabIndex = 2;
+            this.textBoxVariableCodeStart.TabIndex = 1;
             this.textBoxVariableCodeStart.Text = "0100";
             this.textBoxVariableCodeStart.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -200,7 +200,7 @@
             this.comboBoxCodeType.Location = new System.Drawing.Point(9, 207);
             this.comboBoxCodeType.Name = "comboBoxCodeType";
             this.comboBoxCodeType.Size = new System.Drawing.Size(204, 21);
-            this.comboBoxCodeType.TabIndex = 0;
+            this.comboBoxCodeType.TabIndex = 3;
             // 
             // groupBoxLayout
             // 
@@ -245,7 +245,7 @@
             this.textBoxRowCount.Location = new System.Drawing.Point(116, 151);
             this.textBoxRowCount.Name = "textBoxRowCount";
             this.textBoxRowCount.Size = new System.Drawing.Size(100, 20);
-            this.textBoxRowCount.TabIndex = 18;
+            this.textBoxRowCount.TabIndex = 15;
             this.textBoxRowCount.Text = "20";
             this.textBoxRowCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -263,7 +263,7 @@
             this.textBoxColumnCount.Location = new System.Drawing.Point(116, 126);
             this.textBoxColumnCount.Name = "textBoxColumnCount";
             this.textBoxColumnCount.Size = new System.Drawing.Size(100, 20);
-            this.textBoxColumnCount.TabIndex = 16;
+            this.textBoxColumnCount.TabIndex = 13;
             this.textBoxColumnCount.Text = "3";
             this.textBoxColumnCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -281,7 +281,7 @@
             this.textBoxLeftBorder.Location = new System.Drawing.Point(116, 228);
             this.textBoxLeftBorder.Name = "textBoxLeftBorder";
             this.textBoxLeftBorder.Size = new System.Drawing.Size(100, 20);
-            this.textBoxLeftBorder.TabIndex = 14;
+            this.textBoxLeftBorder.TabIndex = 22;
             this.textBoxLeftBorder.Text = "60";
             this.textBoxLeftBorder.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -299,7 +299,7 @@
             this.textBoxRightBorder.Location = new System.Drawing.Point(116, 254);
             this.textBoxRightBorder.Name = "textBoxRightBorder";
             this.textBoxRightBorder.Size = new System.Drawing.Size(100, 20);
-            this.textBoxRightBorder.TabIndex = 12;
+            this.textBoxRightBorder.TabIndex = 24;
             this.textBoxRightBorder.Text = "60";
             this.textBoxRightBorder.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -362,7 +362,7 @@
             this.textBoxCodeHeight.Location = new System.Drawing.Point(116, 48);
             this.textBoxCodeHeight.Name = "textBoxCodeHeight";
             this.textBoxCodeHeight.Size = new System.Drawing.Size(100, 20);
-            this.textBoxCodeHeight.TabIndex = 5;
+            this.textBoxCodeHeight.TabIndex = 8;
             this.textBoxCodeHeight.Text = "30";
             this.textBoxCodeHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -371,7 +371,7 @@
             this.textBoxVerticalMargin.Location = new System.Drawing.Point(116, 74);
             this.textBoxVerticalMargin.Name = "textBoxVerticalMargin";
             this.textBoxVerticalMargin.Size = new System.Drawing.Size(100, 20);
-            this.textBoxVerticalMargin.TabIndex = 4;
+            this.textBoxVerticalMargin.TabIndex = 9;
             this.textBoxVerticalMargin.Text = "10";
             this.textBoxVerticalMargin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -380,7 +380,7 @@
             this.textBoxHorizontalMargin.Location = new System.Drawing.Point(116, 100);
             this.textBoxHorizontalMargin.Name = "textBoxHorizontalMargin";
             this.textBoxHorizontalMargin.Size = new System.Drawing.Size(100, 20);
-            this.textBoxHorizontalMargin.TabIndex = 3;
+            this.textBoxHorizontalMargin.TabIndex = 11;
             this.textBoxHorizontalMargin.Text = "20";
             this.textBoxHorizontalMargin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -389,7 +389,7 @@
             this.textBoxTopBorder.Location = new System.Drawing.Point(116, 176);
             this.textBoxTopBorder.Name = "textBoxTopBorder";
             this.textBoxTopBorder.Size = new System.Drawing.Size(100, 20);
-            this.textBoxTopBorder.TabIndex = 2;
+            this.textBoxTopBorder.TabIndex = 17;
             this.textBoxTopBorder.Text = "60";
             this.textBoxTopBorder.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -398,7 +398,7 @@
             this.textBoxBottomBorder.Location = new System.Drawing.Point(116, 203);
             this.textBoxBottomBorder.Name = "textBoxBottomBorder";
             this.textBoxBottomBorder.Size = new System.Drawing.Size(100, 20);
-            this.textBoxBottomBorder.TabIndex = 1;
+            this.textBoxBottomBorder.TabIndex = 20;
             this.textBoxBottomBorder.Text = "60";
             this.textBoxBottomBorder.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -407,7 +407,7 @@
             this.textBoxCodeWidth.Location = new System.Drawing.Point(116, 24);
             this.textBoxCodeWidth.Name = "textBoxCodeWidth";
             this.textBoxCodeWidth.Size = new System.Drawing.Size(100, 20);
-            this.textBoxCodeWidth.TabIndex = 0;
+            this.textBoxCodeWidth.TabIndex = 6;
             this.textBoxCodeWidth.Text = "90";
             this.textBoxCodeWidth.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
@@ -416,7 +416,7 @@
             this.buttonGenerate.Location = new System.Drawing.Point(237, 310);
             this.buttonGenerate.Name = "buttonGenerate";
             this.buttonGenerate.Size = new System.Drawing.Size(223, 23);
-            this.buttonGenerate.TabIndex = 2;
+            this.buttonGenerate.TabIndex = 26;
             this.buttonGenerate.Text = "Generate Output";
             this.buttonGenerate.UseVisualStyleBackColor = true;
             this.buttonGenerate.Click += new System.EventHandler(this.buttonGenerate_Click);
@@ -435,7 +435,7 @@
             this.textBoxFilename.Location = new System.Drawing.Point(83, 312);
             this.textBoxFilename.Name = "textBoxFilename";
             this.textBoxFilename.Size = new System.Drawing.Size(148, 20);
-            this.textBoxFilename.TabIndex = 23;
+            this.textBoxFilename.TabIndex = 25;
             this.textBoxFilename.Text = "output.pdf";
             // 
             // MainForm
@@ -449,7 +449,7 @@
             this.Controls.Add(this.groupBoxLayout);
             this.Controls.Add(this.groupBoxCode);
             this.Name = "MainForm";
-            this.Text = "Form1";
+            this.Text = "Code PDF Generator";
             this.groupBoxCode.ResumeLayout(false);
             this.groupBoxCode.PerformLayout();
             this.groupBoxLayout.ResumeLayout(false);
