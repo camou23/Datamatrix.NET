@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataMatrixTest", "DataMatri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodePdfCreator", "CodePdfCreator\CodePdfCreator.csproj", "{81B58214-8EE4-4B4D-8A52-8B93C60734E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EncodeDataMatrix", "EncodeDataMatrix\EncodeDataMatrix.csproj", "{44793E42-8F3B-4AE8-8A75-5924BF4FB696}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{81B58214-8EE4-4B4D-8A52-8B93C60734E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81B58214-8EE4-4B4D-8A52-8B93C60734E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81B58214-8EE4-4B4D-8A52-8B93C60734E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44793E42-8F3B-4AE8-8A75-5924BF4FB696}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44793E42-8F3B-4AE8-8A75-5924BF4FB696}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44793E42-8F3B-4AE8-8A75-5924BF4FB696}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44793E42-8F3B-4AE8-8A75-5924BF4FB696}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
