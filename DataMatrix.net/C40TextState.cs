@@ -25,7 +25,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace DataMatrix.net

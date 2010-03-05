@@ -24,7 +24,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace DataMatrix.net
@@ -585,7 +584,7 @@ namespace DataMatrix.net
         {
             get
             {
-                return _array.Count();
+                return _array.Length;
             }
         }
 
@@ -593,7 +592,7 @@ namespace DataMatrix.net
         {
             get
             {
-                return _code.Count();
+                return _code.Length;
             }
         }
 
@@ -601,7 +600,7 @@ namespace DataMatrix.net
         {
             get
             {
-                return _output.Count();
+                return _output.Length;
             }
         }
         #endregion

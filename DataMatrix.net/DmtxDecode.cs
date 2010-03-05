@@ -24,7 +24,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace DataMatrix.net
@@ -190,7 +189,6 @@ namespace DataMatrix.net
 
         internal DmtxMessage MosaicRegion(DmtxRegion reg, int fix)
         {
-            int offset;
             DmtxMessage oMsg;
 
             int colorPlane = reg.FlowBegin.Plane;
