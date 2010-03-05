@@ -53,7 +53,7 @@ namespace DataMatrixTest
             options.MarginSize = 4;
             options.BackColor = Color.White;
             options.ForeColor = Color.Green;
-            Bitmap encodedBitmap = encoder.EncodeImage(testVal, options);
+            Bitmap encodedBitmap = encoder.EncodeImage(testVal);
             encodedBitmap.Save(fileName, ImageFormat.Png);
 
             DmtxImageDecoder decoder = new DmtxImageDecoder();
@@ -68,6 +68,7 @@ namespace DataMatrixTest
             tw.Write(s);
             tw.Flush();
             tw.Close();
+
 
             Console.Read();
         }

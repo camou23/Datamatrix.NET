@@ -145,19 +145,39 @@ namespace DataMatrix.net
 
         internal static Bitmap CopyDataToBitmap(byte[] data, int width, int height)
         {
+            data = InsertPaddingBytes(data, width, height, 24);
+            int stride = 4 * ((width * 24 + 31) / 32);
+            GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
             //Here create the Bitmap to the know height, width and format
-            Bitmap bmp = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-
-            //Create a BitmapData and Lock all pixels to be written
-            BitmapData bmpData = bmp.LockBits(
-                                 new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                 ImageLockMode.WriteOnly, bmp.PixelFormat);
-            //Copy the data from the byte array into BitmapData.Scan0
-            Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
-            //Unlock the pixels
-            bmp.UnlockBits(bmpData);
-            //Return the bitmap
+            Bitmap bmp = new Bitmap(width, height, stride, PixelFormat.Format24bppRgb, dataHandle.AddrOfPinnedObject());
             return bmp;
+        }
+
+        private static byte[] InsertPaddingBytes(byte[] data, int width, int height, int bitsPerPixel)
+        {
+            int paddedWidth = 4 * ((width * bitsPerPixel + 31) / 32);
+            int padding = paddedWidth - 3 * width;
+            if (padding == 0)
+            {
+                return data;
+            }
+            byte[] newData = new byte[paddedWidth * height];
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    newData[i * paddedWidth + 3 * j] = data[3 * (i * width + j)];
+                    newData[i * paddedWidth + 3 * j + 1] = data[3 * (i * width + j) + 1];
+                    newData[i * paddedWidth + 3 * j + 2] = data[3 * (i * width + j) + 2];
+                }
+                for (int k = 0; k < padding; k++)
+                {
+                    newData[i * paddedWidth + 3 * k] = 255;
+                    newData[i * paddedWidth + 3 * k + 1] = 255;
+                    newData[i * paddedWidth + 3 * k + 2] = 255;
+                }
+            }
+            return newData;
         }
 
         private static NumberFormatInfo dotFormatProvider;
