@@ -115,7 +115,7 @@ namespace DataMatrix.net
                 if (region != null)
                 {
                     DmtxMessage msg = isMosaic ? decode.MosaicRegion(region, -1) : decode.MatrixRegion(region, -1);
-                    string message = Encoding.ASCII.GetString(msg.Output);
+                    string message = Encoding.ASCII.GetString(msg.Output, 0, msg.Output.Length);
                     message = message.Substring(0, message.IndexOf('\0'));
                     if (!result.Contains(message))
                     {

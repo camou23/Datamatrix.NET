@@ -47,6 +47,7 @@ namespace DataMatrixTest
         {
             TestMatrixEnDecoder();
             TestMosaicEnDecoder();
+            TestGS1EnDecoder();
         }
 
         private static void TestMatrixEnDecoder()
@@ -99,5 +100,35 @@ namespace DataMatrixTest
             Console.Read();
         }
 
+        private static void TestGS1EnDecoder()
+        {
+            string fileName1 = "gs1DataMatrix1.png";
+            string fileName2 = "gs1DataMatrix2.gif";
+            string gs1Code1 = "10AC3454G3";
+            string gs1Code2 = "010761234567890017100503";
+            DmtxImageEncoder encoder = new DmtxImageEncoder();
+            DmtxImageEncoderOptions options = new DmtxImageEncoderOptions();
+            options.ModuleSize = 8;
+            options.MarginSize = 30;
+            options.BackColor = Color.White;
+            options.ForeColor = Color.Black;
+            options.Scheme = DmtxScheme.DmtxSchemeAsciiGS1;
+            Bitmap encodedBitmap1 = encoder.EncodeImage(gs1Code1, options);
+            encodedBitmap1.Save(fileName1, ImageFormat.Png);
+            Bitmap encodedBitmap2 = encoder.EncodeImage(gs1Code2, options);
+            encodedBitmap2.Save(fileName2, ImageFormat.Gif);
+            DmtxImageDecoder decoder = new DmtxImageDecoder();
+            List<string> decodedCodes1 = decoder.DecodeImage(encodedBitmap1, 1, new TimeSpan(0, 0, 5));
+            List<string> decodedCodes2 = decoder.DecodeImage(encodedBitmap2, 1, new TimeSpan(0, 0, 5));
+            if (decodedCodes1 != null && decodedCodes1.Count == 1)
+            {
+                Console.WriteLine("Encoded code 1: {0}, decoded code 1: {1}, codes are equal: {2}", gs1Code1, decodedCodes1[0], gs1Code1.Equals(decodedCodes1[0]));
+            }
+            if (decodedCodes2 != null && decodedCodes2.Count == 1)
+            {
+                Console.WriteLine("Encoded code 2: {0}, decoded code 2: {1}, codes are equal: {2}", gs1Code2, decodedCodes2[0], gs1Code2.Equals(decodedCodes2[0]));
+            }
+            Console.Read();
+        }
     }
 }

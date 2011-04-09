@@ -74,9 +74,8 @@ namespace DataMatrix.net
             DmtxEncode encode = new DmtxEncode();
             encode.ModuleSize = options.ModuleSize;
             encode.MarginSize = options.MarginSize;
-            encode.Scheme = options.Scheme;
             encode.SizeIdxRequest = options.SizeIdx;
-            byte[] valAsByteArray = Encoding.ASCII.GetBytes(val);
+            byte[] valAsByteArray = GetRawDataAndSetEncoding(val, options, encode);
             if (isMosaic)
             {
                 encode.EncodeDataMosaic(valAsByteArray);
@@ -86,6 +85,20 @@ namespace DataMatrix.net
                 encode.EncodeDataMatrix(options.ForeColor, options.BackColor, valAsByteArray);
             }
             return CopyDataToBitmap(encode.Image.Pxl, encode.Image.Width, encode.Image.Height);
+        }
+
+        private static byte[] GetRawDataAndSetEncoding(string code, DmtxImageEncoderOptions options, DmtxEncode encode)
+        {
+            byte[] result = Encoding.ASCII.GetBytes(code);
+            encode.Scheme = options.Scheme;
+            if (options.Scheme == DmtxScheme.DmtxSchemeAsciiGS1)
+            {
+                List<byte> prefixedRawData = new List<byte>(new[] { (byte)232 });
+                prefixedRawData.AddRange(result);
+                result = prefixedRawData.ToArray();
+                encode.Scheme = DmtxScheme.DmtxSchemeAscii;
+            }
+            return result;
         }
 
         public Bitmap EncodeImage(string val)
@@ -143,8 +156,11 @@ namespace DataMatrix.net
             encode.MarginSize = options.MarginSize;
             encode.SizeIdxRequest = options.SizeIdx;
             encode.Scheme = options.Scheme;
-            byte[] valAsByteArray = Encoding.ASCII.GetBytes(val);
+
+            byte[] valAsByteArray = GetRawDataAndSetEncoding(val, options, encode);
+
             encode.EncodeDataMatrix(options.ForeColor, options.BackColor, valAsByteArray);
+
             return EncodeSvgFile(encode, "", options.ModuleSize, options.MarginSize, options.ForeColor, options.BackColor);
         }
 
@@ -152,10 +168,17 @@ namespace DataMatrix.net
         {
             data = InsertPaddingBytes(data, width, height, 24);
             int stride = 4 * ((width * 24 + 31) / 32);
+            #if !WINCE
             GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            //Here create the Bitmap to the know height, width and format
             Bitmap bmp = new Bitmap(width, height, stride, PixelFormat.Format24bppRgb, dataHandle.AddrOfPinnedObject());
             return bmp;
+            #else
+            Bitmap bmp = new Bitmap(width, height);
+            BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+            Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
+            bmp.UnlockBits(bmpData);
+            return bmp;
+            #endif
         }
 
         private static byte[] InsertPaddingBytes(byte[] data, int width, int height, int bitsPerPixel)

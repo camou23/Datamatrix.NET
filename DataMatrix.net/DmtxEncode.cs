@@ -1421,6 +1421,13 @@ namespace DataMatrix.net
             }
 
             /* Extended ASCII char */
+            if (inputValue == DmtxConstants.DmtxCharFNC1)
+            {
+                PushInputWord(channel, DmtxConstants.DmtxCharFNC1);
+                IncrementProgress(channel, 12);
+                channel.InputIndex++;
+                return true;
+            }
             if (inputValue >= 128)
             {
                 PushInputWord(channel, DmtxConstants.DmtxCharAsciiUpperShift);
