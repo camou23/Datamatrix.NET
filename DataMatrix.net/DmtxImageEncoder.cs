@@ -149,6 +149,26 @@ namespace DataMatrix.net
             return EncodeSvgImage(val, options);
         }
 
+        public bool[,] EncodeRawData(string val)
+        {
+            return EncodeRawData(val, new DmtxImageEncoderOptions());
+        }
+
+        public bool[,] EncodeRawData(string val, DmtxImageEncoderOptions options)
+        {
+            DmtxEncode encode = new DmtxEncode();
+            encode.ModuleSize = 1;
+            encode.MarginSize = 0;
+            encode.SizeIdxRequest = options.SizeIdx;
+            encode.Scheme = options.Scheme;
+
+            byte[] valAsByteArray = GetRawDataAndSetEncoding(val, options, encode);
+
+            encode.EncodeDataMatrixRaw(valAsByteArray);
+
+            return encode.RawData;
+        }
+
         public string EncodeSvgImage(string val, DmtxImageEncoderOptions options)
         {
             DmtxEncode encode = new DmtxEncode();

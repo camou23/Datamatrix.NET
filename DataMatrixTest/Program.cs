@@ -75,8 +75,28 @@ namespace DataMatrixTest
             tw.Flush();
             tw.Close();
 
+            TestRawEncoder("HELLO WORLD");
+            new DmtxImageEncoder().EncodeImage("HELLO WORLD").Save("helloWorld.png");
 
             Console.Read();
+        }
+
+        private static void TestRawEncoder(string text)
+        {
+            DmtxImageEncoder encoder = new DmtxImageEncoder();
+            bool[,] rawData = encoder.EncodeRawData(text);
+            Console.WriteLine("================");
+            Console.WriteLine();
+            for (int rowIdx = 0; rowIdx < rawData.GetLength(1); rowIdx++)
+            {
+                for (int colIdx = 0; colIdx < rawData.GetLength(0); colIdx++)
+                {
+                    Console.Write(rawData[colIdx, rowIdx] ? "X" : " ");
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+            Console.WriteLine("================");
         }
 
 

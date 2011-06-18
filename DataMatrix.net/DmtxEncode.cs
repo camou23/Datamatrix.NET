@@ -49,6 +49,7 @@ namespace DataMatrix.net
         DmtxMessage _message;
         DmtxImage _image;
         DmtxRegion _region;
+        bool[,] _rawData;
         #endregion
 
         #region Constructors
@@ -81,7 +82,18 @@ namespace DataMatrix.net
         #endregion
 
         #region Methods
+        internal bool EncodeDataMatrixRaw(byte[] inputString)
+        {
+            return EncodeDataMatrix(null, null, inputString, true);
+        }
+
         internal bool EncodeDataMatrix(Color? foreColor, Color? backColor, byte[] inputString)
+        {
+            return EncodeDataMatrix(foreColor, backColor, inputString, false);
+        }
+
+
+        internal bool EncodeDataMatrix(Color? foreColor, Color? backColor, byte[] inputString, bool encodeRaw)
         {
             int padCount;
             int width, height, bitsPerPixel;
@@ -147,7 +159,10 @@ namespace DataMatrix.net
             this._image.RowPadBytes = this._rowPadBytes;
 
             /* Insert finder and aligment pattern modules */
-            PrintPattern(foreColor, backColor);
+            if (encodeRaw)
+                PrintPatternRaw();
+            else
+                PrintPattern(foreColor, backColor);
 
             return true;
         }
@@ -305,6 +320,20 @@ namespace DataMatrix.net
             PrintPattern(null, null);
 
             return true;
+        }
+
+        private void PrintPatternRaw()
+        {
+            this._rawData = new bool[this._region.SymbolCols, this._region.SymbolRows];
+
+            for (int symbolRow = 0; symbolRow < this._region.SymbolRows; symbolRow++)
+            {
+                for (int symbolCol = 0; symbolCol < this._region.SymbolCols; symbolCol++)
+                {
+                    int moduleStatus = this._message.SymbolModuleStatus(this._region.SizeIdx, symbolRow, symbolCol);
+                    this._rawData[symbolCol, this._region.SymbolRows - symbolRow - 1] = ((moduleStatus & DmtxConstants.DmtxModuleOnBlue) != 0x00);
+                }
+            }
         }
 
         private void PrintPattern(Color? foreColor, Color? backColor)
@@ -1721,6 +1750,12 @@ namespace DataMatrix.net
         {
             get { return _region; }
             set { _region = value; }
+        }
+
+        public bool[,] RawData
+        {
+            get { return _rawData; }
+            set { _rawData = value; }
         }
         #endregion
     }
