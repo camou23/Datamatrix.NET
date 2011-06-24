@@ -102,7 +102,6 @@ namespace DataMatrix.net
             DmtxImage dmtxImg = new DmtxImage(rawImg, image.Width, image.Height, DmtxPackOrder.DmtxPack24bppRGB);
             dmtxImg.RowPadBytes = stride % 3;
             DmtxDecode decode = new DmtxDecode(dmtxImg, 1);
-            TimeSpan timeLeft = new TimeSpan(timeOut.Ticks);
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
             while (true)

@@ -28,39 +28,20 @@ Contact: Michael Faschinger - michfasch@gmx.at
  
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DataMatrix.net
 {
     internal class DmtxRay2
     {
         #region Fields
-        double _tMin;
-        double _tMax;
+
         DmtxVector2 _p;
         DmtxVector2 _v;
-        #endregion
-
-        #region Constructors
-        internal DmtxRay2()
-        {
-            // pass
-        }
         #endregion
 
         #region Properties
         internal DmtxVector2 P
         {
-            get
-            {
-                if (_p == null)
-                {
-                    _p = new DmtxVector2();
-                }
-                return _p;
-            }
+            get { return this._p ?? (this._p = new DmtxVector2()); }
             set
             {
                 _p = value;
@@ -69,14 +50,7 @@ namespace DataMatrix.net
 
         internal DmtxVector2 V
         {
-            get
-            {
-                if (_v == null)
-                {
-                    _v = new DmtxVector2();
-                }
-                return _v;
-            }
+            get { return this._v ?? (this._v = new DmtxVector2()); }
             set
             {
                 _v = value;
@@ -84,29 +58,10 @@ namespace DataMatrix.net
         }
 
 
-        internal double TMin
-        {
-            get
-            {
-                return _tMin;
-            }
-            set
-            {
-                _tMin = value;
-            } 
-        }
+        internal double TMin { get; set; }
 
-        internal double TMax
-        {
-            get
-            {
-                return _tMax;
-            }
-            set
-            {
-                _tMax = value;
-            }
-        }
+        internal double TMax { get; set; }
+
         #endregion
     }
 }

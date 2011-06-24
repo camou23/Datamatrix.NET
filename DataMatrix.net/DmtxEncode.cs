@@ -30,7 +30,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 
 namespace DataMatrix.net
@@ -95,10 +94,7 @@ namespace DataMatrix.net
 
         internal bool EncodeDataMatrix(Color? foreColor, Color? backColor, byte[] inputString, bool encodeRaw)
         {
-            int padCount;
-            int width, height, bitsPerPixel;
             byte[] buf = new byte[4096];
-            byte[] pxl;
 
             /* Encode input string into data codewords */
             DmtxSymbolSize sizeIdx = this._sizeIdxRequest;
@@ -115,7 +111,7 @@ namespace DataMatrix.net
             }
 
             /* Add pad characters to match a standard symbol size (whether smallest or requested) */
-            padCount = AddPadChars(buf, ref dataWordCount, DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx));
+            int padCount = this.AddPadChars(buf, ref dataWordCount, DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx));
 
             /* XXX we can remove a lot of this redundant data */
             this._region = new DmtxRegion();
@@ -126,8 +122,7 @@ namespace DataMatrix.net
             this._region.MappingCols = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixCols, sizeIdx);
 
             /* Allocate memory for message and array */
-            this._message = new DmtxMessage(sizeIdx, DmtxFormat.Matrix);
-            this._message.PadCount = padCount;
+            this._message = new DmtxMessage(sizeIdx, DmtxFormat.Matrix) {PadCount = padCount};
             for (int i = 0; i < dataWordCount; i++)
             {
                 this._message.Code[i] = buf[i];
@@ -140,9 +135,9 @@ namespace DataMatrix.net
             DmtxDecode.ModulePlacementEcc200(this._message.Array, this._message.Code,
                   this._region.SizeIdx, DmtxConstants.DmtxModuleOnRGB);
 
-            width = 2 * this._marginSize + (this._region.SymbolCols * this._moduleSize);
-            height = 2 * this._marginSize + (this._region.SymbolRows * this._moduleSize);
-            bitsPerPixel = DmtxCommon.GetBitsPerPixel(this._pixelPacking);
+            int width = 2 * this._marginSize + (this._region.SymbolCols * this._moduleSize);
+            int height = 2 * this._marginSize + (this._region.SymbolRows * this._moduleSize);
+            int bitsPerPixel = DmtxCommon.GetBitsPerPixel(this._pixelPacking);
             if (bitsPerPixel == DmtxConstants.DmtxUndefined)
                 return false;
             if (bitsPerPixel % 8 != 0)
@@ -152,11 +147,10 @@ namespace DataMatrix.net
 
             /* Allocate memory for the image to be generated */
             // pxl = (unsigned char *)malloc(width * height * (bitsPerPixel/8) + enc->rowPadBytes);
-            pxl = new byte[width * height * (bitsPerPixel / 8) + this._rowPadBytes];
+            byte[] pxl = new byte[width * height * (bitsPerPixel / 8) + this._rowPadBytes];
 
-            this._image = new DmtxImage(pxl, width, height, this._pixelPacking);
-            this._image.ImageFlip = this._imageFlip;
-            this._image.RowPadBytes = this._rowPadBytes;
+            this._image = new DmtxImage(pxl, width, height, this._pixelPacking)
+                              {ImageFlip = this._imageFlip, RowPadBytes = this._rowPadBytes};
 
             /* Insert finder and aligment pattern modules */
             if (encodeRaw)
@@ -169,19 +163,15 @@ namespace DataMatrix.net
 
         internal bool EncodeDataMosaic(byte[] inputString)
         {
-            int dataWordCount;
-            int tmpInputSize;
-            int inputStartIndex;
             int[] splitInputSize = new int[3];
-            DmtxSymbolSize sizeIdx, sizeIdxRequest;
-            DmtxSymbolSize splitSizeIdxAttempt, splitSizeIdxFirst, splitSizeIdxLast;
+            DmtxSymbolSize sizeIdxRequest;
+            DmtxSymbolSize splitSizeIdxAttempt, splitSizeIdxLast;
             List<byte[]> buf = new List<byte[]>(3);
             for (int i = 0; i < 3; i++)
             {
                 buf.Add(new byte[4096]);
             }
-            DmtxEncode encGreen, encBlue;
-            int row, col, mappingRows, mappingCols;
+            int row, col;
 
             /* 1) count how many codewords it would take to encode the whole thing
              * 2) take ceiling N of codeword count divided by 3
@@ -194,21 +184,21 @@ namespace DataMatrix.net
              */
 
             /* Encode full input string to establish baseline data codeword count */
-            sizeIdx = sizeIdxRequest = this._sizeIdxRequest;
+            DmtxSymbolSize sizeIdx = sizeIdxRequest = this._sizeIdxRequest;
             /* XXX buf can be changed here to use all 3 buffers' length */
-            dataWordCount = EncodeDataCodewords(buf[0], inputString, ref sizeIdx);
+            int dataWordCount = this.EncodeDataCodewords(buf[0], inputString, ref sizeIdx);
             if (dataWordCount <= 0)
                 return false;
 
             /* Use 1/3 (ceiling) of inputSize establish input size target */
-            tmpInputSize = (inputString.Length + 2) / 3;
+            int tmpInputSize = (inputString.Length + 2) / 3;
             splitInputSize[0] = tmpInputSize;
             splitInputSize[1] = tmpInputSize;
             splitInputSize[2] = inputString.Length - (splitInputSize[0] + splitInputSize[1]);
             /* XXX clean up above lines later for corner cases */
 
             /* Use 1/3 (floor) of dataWordCount establish first symbol size attempt */
-            splitSizeIdxFirst = FindCorrectSymbolSize(tmpInputSize, sizeIdxRequest);
+            DmtxSymbolSize splitSizeIdxFirst = this.FindCorrectSymbolSize(tmpInputSize, sizeIdxRequest);
             if (splitSizeIdxFirst == DmtxSymbolSize.DmtxSymbolShapeAuto)
                 return false;
 
@@ -251,21 +241,18 @@ namespace DataMatrix.net
             {
                 /* RED LAYER */
                 sizeIdx = splitSizeIdxAttempt;
-                inputStartIndex = 0;
                 EncodeDataCodewords(buf[0], tmpRed, ref sizeIdx);
                 if (sizeIdx != splitSizeIdxAttempt)
                     continue;
 
                 /* GREEN LAYER */
                 sizeIdx = splitSizeIdxAttempt;
-                inputStartIndex += splitInputSize[0];
                 EncodeDataCodewords(buf[1], tmpGreen, ref sizeIdx);
                 if (sizeIdx != splitSizeIdxAttempt)
                     continue;
 
                 /* BLUE LAYER */
                 sizeIdx = splitSizeIdxAttempt;
-                inputStartIndex += splitInputSize[1];
                 EncodeDataCodewords(buf[2], tmpBlue, ref sizeIdx);
                 if (sizeIdx != splitSizeIdxAttempt)
                     continue;
@@ -276,16 +263,16 @@ namespace DataMatrix.net
             this._sizeIdxRequest = splitSizeIdxAttempt;
 
             /* Now we have the correct lengths for splitInputSize, and they all fit into the desired size */
-            encGreen = new DmtxEncode(this);
-            encBlue = new DmtxEncode(this);
+            DmtxEncode encGreen = new DmtxEncode(this);
+            DmtxEncode encBlue = new DmtxEncode(this);
 
             /* First encode red to the main encode struct (image portion will be overwritten) */
             EncodeDataMatrix(null, null, tmpRed);
             encGreen.EncodeDataMatrix(null, null, tmpGreen);
             encBlue.EncodeDataMatrix(null, null, tmpBlue);
 
-            mappingRows = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixRows, splitSizeIdxAttempt);
-            mappingCols = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixCols, splitSizeIdxAttempt);
+            int mappingRows = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixRows, splitSizeIdxAttempt);
+            int mappingCols = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixCols, splitSizeIdxAttempt);
             for (int i = 0; i < this._region.MappingCols * this._region.MappingRows; i++)
             {
                 this._message.Array[i] = 0;
@@ -338,28 +325,17 @@ namespace DataMatrix.net
 
         private void PrintPattern(Color? foreColor, Color? backColor)
         {
-            int i, j;
-            int symbolRow, symbolCol;
-            int pixelRow, pixelCol;
-            int moduleStatus;
-            int rowSize, height;
+            int symbolRow;
             int[] rgb = new int[3];
-            double sxy, txy;
-            DmtxVector2 vIn, vOut;
 
-            txy = this._marginSize;
-            sxy = 1.0 / this._moduleSize;
+            double txy = this._marginSize;
 
-            DmtxMatrix3 m1 = DmtxMatrix3.Translate(-txy, -txy);
-            DmtxMatrix3 m2 = DmtxMatrix3.Scale(sxy, -sxy);
-            DmtxMatrix3 xfrm = m1 * m2;
-
-            m1 = DmtxMatrix3.Translate(txy, txy);
-            m2 = DmtxMatrix3.Scale(this._moduleSize, this._moduleSize);
+            DmtxMatrix3 m1 = DmtxMatrix3.Translate(txy, txy);
+            DmtxMatrix3 m2 = DmtxMatrix3.Scale(this._moduleSize, this._moduleSize);
             DmtxMatrix3 rxfrm = m2 * m1;
 
-            rowSize = this._image.RowSizeBytes;
-            height = this._image.Height;
+            int rowSize = this._image.RowSizeBytes;
+            int height = this._image.Height;
 
             for (int pxlIndex = 0; pxlIndex < rowSize * height; pxlIndex++)
             {
@@ -368,23 +344,19 @@ namespace DataMatrix.net
 
             for (symbolRow = 0; symbolRow < this._region.SymbolRows; symbolRow++)
             {
+                int symbolCol;
                 for (symbolCol = 0; symbolCol < this._region.SymbolCols; symbolCol++)
                 {
-                    vIn = new DmtxVector2(symbolCol, symbolRow);
-                    vOut = vIn * rxfrm;
+                    DmtxVector2 vIn = new DmtxVector2(symbolCol, symbolRow);
+                    DmtxVector2 vOut = vIn * rxfrm;
 
-                    pixelCol = (int)(vOut.X);
-                    pixelRow = (int)(vOut.Y);
-                    moduleStatus = this._message.SymbolModuleStatus(this._region.SizeIdx, symbolRow, symbolCol);
-                    if (moduleStatus != 7)
+                    int pixelCol = (int)(vOut.X);
+                    int pixelRow = (int)(vOut.Y);
+                    int moduleStatus = this._message.SymbolModuleStatus(this._region.SizeIdx, symbolRow, symbolCol);
+
+                    for (int i = pixelRow; i < pixelRow + this._moduleSize; i++)
                     {
-                        bool rgb0 = (moduleStatus & DmtxConstants.DmtxModuleOnRed) == 0;
-                        bool rgb1 = (moduleStatus & DmtxConstants.DmtxModuleOnGreen) == 0;
-                        bool rgb2 = (moduleStatus & DmtxConstants.DmtxModuleOnBlue) == 0;
-                    }
-                    for (i = pixelRow; i < pixelRow + this._moduleSize; i++)
-                    {
-                        for (j = pixelCol; j < pixelCol + this._moduleSize; j++)
+                        for (int j = pixelCol; j < pixelCol + this._moduleSize; j++)
                         {
                             if (foreColor.HasValue && backColor.HasValue)
                             {
@@ -404,7 +376,6 @@ namespace DataMatrix.net
                             this._image.SetPixelValue(j, i, 2, (byte)rgb[2]);
                         }
                     }
-
                 }
             }
         }
@@ -433,11 +404,8 @@ namespace DataMatrix.net
 
         private byte Randomize253State(byte codewordValue, int codewordPosition)
         {
-            int pseudoRandom;
-            int tmp;
-
-            pseudoRandom = ((149 * codewordPosition) % 253) + 1;
-            tmp = codewordValue + pseudoRandom;
+            int pseudoRandom = ((149 * codewordPosition) % 253) + 1;
+            int tmp = codewordValue + pseudoRandom;
             if (tmp > 254)
                 tmp -= 254;
 
@@ -487,14 +455,14 @@ namespace DataMatrix.net
         private DmtxSymbolSize FindCorrectSymbolSize(int dataWords, DmtxSymbolSize sizeIdxRequest)
         {
             DmtxSymbolSize sizeIdx;
-            int idxBeg, idxEnd;
 
             if (dataWords <= 0)
                 return DmtxSymbolSize.DmtxSymbolShapeAuto;
 
             if (sizeIdxRequest == DmtxSymbolSize.DmtxSymbolSquareAuto || sizeIdxRequest == DmtxSymbolSize.DmtxSymbolRectAuto)
             {
-
+                int idxBeg;
+                int idxEnd;
                 if (sizeIdxRequest == DmtxSymbolSize.DmtxSymbolSquareAuto)
                 {
                     idxBeg = 0;
@@ -534,15 +502,13 @@ namespace DataMatrix.net
 
         private int EncodeSingleScheme(byte[] buf, byte[] codewords, DmtxScheme scheme)
         {
-            int size;
-            bool err;
             DmtxChannel channel = new DmtxChannel();
 
             InitChannel(channel, codewords);
 
             while (channel.InputIndex < channel.Input.Length)
             {
-                err = EncodeNextWord(channel, scheme);
+                bool err = EncodeNextWord(channel, scheme);
                 if (!err)
                     return 0;
 
@@ -555,7 +521,7 @@ namespace DataMatrix.net
             }
             /* DumpChannel(&channel); */
 
-            size = channel.EncodedLength / 12;
+            int size = channel.EncodedLength / 12;
             for (int i = 0; i < size; i++)
             {
                 buf[i] = channel.EncodedWords[i];
@@ -567,18 +533,15 @@ namespace DataMatrix.net
         private int EncodeAutoBest(byte[] buf, byte[] codewords)
         {
             DmtxScheme targetScheme;
-            int winnerSize;
-            bool err;
             DmtxChannelGroup optimal = new DmtxChannelGroup();
             DmtxChannelGroup best = new DmtxChannelGroup();
-            DmtxChannel winner;
 
             /* Intialize optimizing channels and encode first codeword from default ASCII */
             for (targetScheme = DmtxScheme.DmtxSchemeAscii; targetScheme <= DmtxScheme.DmtxSchemeBase256; targetScheme++)
             {
                 DmtxChannel channel = (optimal.Channels[(int)targetScheme]);
                 InitChannel(channel, codewords);
-                err = EncodeNextWord(channel, targetScheme);
+                bool err = EncodeNextWord(channel, targetScheme);
                 if (err)
                     return 0;
             }
@@ -598,7 +561,7 @@ namespace DataMatrix.net
             }
 
             /* Choose a winner now that all channels are finished */
-            winner = optimal.Channels[(int)DmtxScheme.DmtxSchemeAscii];
+            DmtxChannel winner = optimal.Channels[(int)DmtxScheme.DmtxSchemeAscii];
             for (targetScheme = DmtxScheme.DmtxSchemeAscii + 1; targetScheme <= DmtxScheme.DmtxSchemeBase256; targetScheme++)
             {
                 if (optimal.Channels[(int)targetScheme].Invalid != DmtxChannelStatus.DmtxChannelValid)
@@ -613,7 +576,7 @@ namespace DataMatrix.net
             }
 
             /* XXX get rid of buf concept and try to do something with channel -> matrix copy instead */
-            winnerSize = winner.EncodedLength / 12;
+            int winnerSize = winner.EncodedLength / 12;
             for (int i = 0; i < winnerSize; i++)
             {
                 buf[i] = winner.EncodedWords[i];
@@ -624,14 +587,12 @@ namespace DataMatrix.net
 
         private DmtxChannel FindBestChannel(DmtxChannelGroup group, DmtxScheme targetScheme)
         {
-            bool err;
-            DmtxChannel channel;
             DmtxChannel winner = null;
 
             for (DmtxScheme encFrom = DmtxScheme.DmtxSchemeAscii; encFrom <= DmtxScheme.DmtxSchemeBase256; encFrom++)
             {
 
-                channel = group.Channels[(int)encFrom];
+                DmtxChannel channel = group.Channels[(int)encFrom];
 
                 /* If from channel doesn't hold valid data because it couldn't
                    represent the previous value then skip it */
@@ -645,7 +606,7 @@ namespace DataMatrix.net
                 if (channel.InputIndex == channel.Input.Length)
                     continue;
 
-                err = EncodeNextWord(channel, targetScheme);
+                bool err = EncodeNextWord(channel, targetScheme);
                 if (err == false)
                 {
                     /* XXX fix this */
@@ -713,8 +674,6 @@ namespace DataMatrix.net
             int i;
             int newDataLength;
             int headerByteCount;
-            byte valueTmp;
-            int firstBytePtrIndex;
             byte[] headerByte = new byte[2];
 
             if (channel.EncScheme != DmtxScheme.DmtxSchemeBase256)
@@ -722,7 +681,7 @@ namespace DataMatrix.net
                 throw new Exception("Invalid encoding scheme selected!");
             }
 
-            firstBytePtrIndex = channel.FirstCodeWord / 12;
+            int firstBytePtrIndex = channel.FirstCodeWord / 12;
             headerByte[0] = DmtxMessage.UnRandomize255State(channel.EncodedWords[firstBytePtrIndex], channel.FirstCodeWord / 12 + 1);
 
             /* newSchemeLength contains size byte(s) too */
@@ -762,7 +721,7 @@ namespace DataMatrix.net
             {
                 for (i = channel.CurrentLength / 12 - 1; i > channel.FirstCodeWord / 12; i--)
                 {
-                    valueTmp = DmtxMessage.UnRandomize255State(channel.EncodedWords[i], i + 1);
+                    byte valueTmp = DmtxMessage.UnRandomize255State(channel.EncodedWords[i], i + 1);
                     channel.EncodedWords[i + 1] = Randomize255State(valueTmp, i + 2);
                 }
                 IncrementProgress(channel, 12);
@@ -788,14 +747,12 @@ namespace DataMatrix.net
 
         private bool EncodeEdifactCodeword(DmtxChannel channel)
         {
-            byte inputValue;
-
             if (channel.EncScheme != DmtxScheme.DmtxSchemeEdifact)
             {
                 throw new Exception("Invalid encoding scheme selected!");
             }
 
-            inputValue = channel.Input[channel.InputIndex];
+            byte inputValue = channel.Input[channel.InputIndex];
 
             if (inputValue < 32 || inputValue > 94)
             {
@@ -812,15 +769,8 @@ namespace DataMatrix.net
             return true;
         }
 
-        private bool CheckForEndOfSymbolEdifact(DmtxChannel channel)
+        private void CheckForEndOfSymbolEdifact(DmtxChannel channel)
         {
-            int currentByte;
-            DmtxSymbolSize sizeIdx;
-            int symbolCodewords;
-            int asciiCodewords;
-            int i;
-            bool err;
-
             /* This function tests if the remaining input values can be completed using
              * one of the valid end-of-symbol cases, and finishes encodation if possible.
              *
@@ -854,36 +804,35 @@ namespace DataMatrix.net
             /* Can't end symbol right now if there are 5+ values remaining
                (noting that '9999' can still terminate in case (f)) */
             if (edifactValues > 4) /* subset of (i) -- performance only */
-                return true;
+                return;
 
             /* Find minimum symbol size big enough to accomodate remaining codewords */
             /* XXX broken -- what if someone asks for DmtxSymbolRectAuto or specific sizeIdx? */
 
-            currentByte = channel.CurrentLength / 12;
-            sizeIdx = FindCorrectSymbolSize(currentByte, DmtxSymbolSize.DmtxSymbolSquareAuto);
+            int currentByte = channel.CurrentLength / 12;
+            DmtxSymbolSize sizeIdx = this.FindCorrectSymbolSize(currentByte, DmtxSymbolSize.DmtxSymbolSquareAuto);
             /* XXX test for sizeIdx == DmtxUndefined here */
-            symbolCodewords = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx) - currentByte;
+            int symbolCodewords = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx) - currentByte;
 
             /* Test for special case condition */
             if (channel.CurrentLength % 12 == 0 &&
                   (symbolCodewords == 1 || symbolCodewords == 2))
             {
-
                 /* Count number of codewords left to write (assuming ASCII) */
                 /* XXX temporary hack ... later create function that knows about shifts and digits */
-                asciiCodewords = edifactValues;
+                int asciiCodewords = edifactValues;
 
                 if (asciiCodewords <= symbolCodewords)
                 { /* (a,b,d,e,f) */
                     ChangeEncScheme(channel, DmtxScheme.DmtxSchemeAscii, DmtxUnlatch.Implicit);
 
                     /* XXX this loop should produce exactly asciiWords codewords ... assert somehow? */
-                    for (i = 0; i < edifactValues; i++)
+                    for (int i = 0; i < edifactValues; i++)
                     {
-                        err = EncodeNextWord(channel, DmtxScheme.DmtxSchemeAscii);
+                        bool err = EncodeNextWord(channel, DmtxScheme.DmtxSchemeAscii);
                         if (err == false)
                         {
-                            return false;
+                            return;
                         }
                         if (channel.Invalid != DmtxChannelStatus.DmtxChannelValid)
                         {
@@ -899,15 +848,11 @@ namespace DataMatrix.net
             }
             /* else (i) -- do nothing */
 
-            return true;
+            return;
         }
 
         private void PushInputWord(DmtxChannel channel, byte codeword)
         {
-            int i;
-            int startByte, pos;
-            DmtxQuadruplet quad;
-
             /* XXX should this assertion actually be a legit runtime test? */
             if ((channel.EncodedLength / 12 > 3 * 1558))
             {
@@ -955,14 +900,15 @@ namespace DataMatrix.net
 
                     /* write codeword value to next 6 bits (might span codeword bytes) and
                        then pad any remaining bits until next byte boundary with zero bits. */
-                    pos = channel.CurrentLength % 4;
-                    startByte = ((channel.CurrentLength + 9) / 12) - pos;
+                    int pos = channel.CurrentLength % 4;
+                    int startByte = ((channel.CurrentLength + 9) / 12) - pos;
 
-                    quad = GetQuadrupletValues(channel.EncodedWords[startByte],
-                                               channel.EncodedWords[startByte + 1],
-                                               channel.EncodedWords[startByte + 2]);
+                    DmtxQuadruplet quad = GetQuadrupletValues(channel.EncodedWords[startByte],
+                                                              channel.EncodedWords[startByte + 1],
+                                                              channel.EncodedWords[startByte + 2]);
                     quad.Value[pos] = codeword;
-                    for (i = pos + 1; i < 4; i++)
+
+                    for (int i = pos + 1; i < 4; i++)
                         quad.Value[i] = 0;
 
                     /* Only write the necessary codewords */
@@ -989,24 +935,14 @@ namespace DataMatrix.net
                     channel.EncodedWords[channel.CurrentLength / 12] = codeword;
                     channel.EncodedLength += 12;
                     break;
-
-                default:
-                    break;
             }
         }
 
         private bool EncodeTripletCodeword(DmtxChannel channel)
         {
-            int i;
-            int inputCount;
-            int tripletCount;
-            int count;
             int[] outputWords = new int[4];       /* biggest: upper shift to non-basic set */
             byte[] buffer = new byte[6];  /* biggest: 2 words followed by 4-word upper shift */
-            bool err;
             DmtxTriplet triplet = new DmtxTriplet();
-            byte inputWord;
-            int ptrIndex;
 
             if (channel.EncScheme != DmtxScheme.DmtxSchemeX12 &&
                 channel.EncScheme != DmtxScheme.DmtxSchemeText &&
@@ -1035,9 +971,9 @@ namespace DataMatrix.net
                    prevents this condition by encoding until we have a clean break or
                    until we reach the end of the input data. */
 
-                ptrIndex = channel.InputIndex;
+                int ptrIndex = channel.InputIndex;
 
-                tripletCount = 0;
+                int tripletCount = 0;
                 for (; ; )
                 {
 
@@ -1049,8 +985,8 @@ namespace DataMatrix.net
 
                     while (tripletCount < 3 && ptrIndex < channel.Input.Length)
                     {
-                        inputWord = channel.Input[ptrIndex++];
-                        count = GetC40TextX12Words(outputWords, inputWord, channel.EncScheme);
+                        byte inputWord = channel.Input[ptrIndex++];
+                        int count = GetC40TextX12Words(outputWords, inputWord, channel.EncScheme);
 
                         if (count == 0)
                         {
@@ -1058,7 +994,7 @@ namespace DataMatrix.net
                             return false;
                         }
 
-                        for (i = 0; i < count; i++)
+                        for (int i = 0; i < count; i++)
                         {
                             buffer[tripletCount++] = (byte)outputWords[i];
                         }
@@ -1106,9 +1042,9 @@ namespace DataMatrix.net
                             throw new Exception("Channel input index exceeds range!");
                         }
 
-                        inputCount = (int)(channel.Input.Length - channel.InputIndex);
+                        int inputCount = channel.Input.Length - channel.InputIndex;
 
-                        err = ProcessEndOfSymbolTriplet(channel, triplet, tripletCount, inputCount);
+                        bool err = ProcessEndOfSymbolTriplet(channel, triplet, tripletCount, inputCount);
                         if (err == false)
                             return false;
                         break;
@@ -1135,8 +1071,6 @@ namespace DataMatrix.net
 
         private int GetC40TextX12Words(int[] outputWords, byte inputWord, DmtxScheme encScheme)
         {
-            int count;
-
             if (encScheme != DmtxScheme.DmtxSchemeX12 &&
                 encScheme != DmtxScheme.DmtxSchemeText &&
                 encScheme != DmtxScheme.DmtxSchemeC40)
@@ -1144,7 +1078,7 @@ namespace DataMatrix.net
                 throw new Exception("Invalid encoding scheme selected!");
             }
 
-            count = 0;
+            int count = 0;
 
             /* Handle extended ASCII with Upper Shift character */
             if (inputWord > 127)
@@ -1153,12 +1087,10 @@ namespace DataMatrix.net
                 {
                     return 0;
                 }
-                else
-                {
-                    outputWords[count++] = DmtxConstants.DmtxCharTripletShift2;
-                    outputWords[count++] = 30;
-                    inputWord -= 128;
-                }
+                
+                outputWords[count++] = DmtxConstants.DmtxCharTripletShift2;
+                outputWords[count++] = 30;
+                inputWord -= 128;
             }
 
             /* Handle all other characters according to encodation scheme */
@@ -1237,10 +1169,6 @@ namespace DataMatrix.net
 
         private bool ProcessEndOfSymbolTriplet(DmtxChannel channel, DmtxTriplet triplet, int tripletCount, int inputCount)
         {
-            DmtxSymbolSize sizeIdx;
-            int currentByte;
-            int remainingCodewords;
-            int inputAdjust;
             bool err;
 
             /* In this function we process some special cases from the Data Matrix
@@ -1278,18 +1206,18 @@ namespace DataMatrix.net
             }
 
             /* XXX Capture how many extra input values will be counted ... for later adjustment */
-            inputAdjust = tripletCount - inputCount;
+            int inputAdjust = tripletCount - inputCount;
 
             /* Find minimum symbol size big enough to accomodate remaining codewords */
-            currentByte = channel.CurrentLength / 12;
+            int currentByte = channel.CurrentLength / 12;
 
-            sizeIdx = FindCorrectSymbolSize(currentByte + ((inputCount == 3) ? 2 : inputCount), this._sizeIdxRequest);
+            DmtxSymbolSize sizeIdx = this.FindCorrectSymbolSize(currentByte + ((inputCount == 3) ? 2 : inputCount), this._sizeIdxRequest);
 
             if (sizeIdx == DmtxSymbolSize.DmtxSymbolShapeAuto)
                 return false;
 
             /* XXX test for sizeIdx == DmtxUndefined here */
-            remainingCodewords = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx) - currentByte;
+            int remainingCodewords = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx) - currentByte;
 
             /* XXX the big problem with all of these special cases is what if one of
                these last words requires multiple bytes in ASCII (like upper shift?).
@@ -1389,15 +1317,12 @@ namespace DataMatrix.net
 
         private bool EncodeAsciiCodeword(DmtxChannel channel)
         {
-            byte inputValue, prevValue, prevPrevValue;
-            int prevIndex;
-
             if (channel.EncScheme != DmtxScheme.DmtxSchemeAscii)
             {
                 throw new Exception("Invalid encoding scheme selected!");
             }
 
-            inputValue = channel.Input[channel.InputIndex];
+            byte inputValue = channel.Input[channel.InputIndex];
 
             /* XXX this is problematic ... We should not be looking backward in the
                channel to determine what state we're in. Add the necessary logic to
@@ -1436,10 +1361,10 @@ namespace DataMatrix.net
             /* 2nd digit char in a row - overwrite first digit word with combined value */
             if (IsDigit(inputValue) && channel.CurrentLength >= channel.FirstCodeWord + 12)
             {
-                prevIndex = (channel.CurrentLength - 12) / 12;
-                prevValue = (byte)(channel.EncodedWords[prevIndex] - 1);
+                int prevIndex = (channel.CurrentLength - 12) / 12;
+                byte prevValue = (byte)(channel.EncodedWords[prevIndex] - 1);
 
-                prevPrevValue = (byte)((prevIndex > channel.FirstCodeWord / 12) ? channel.EncodedWords[prevIndex - 1] : 0);
+                byte prevPrevValue = (byte)((prevIndex > channel.FirstCodeWord / 12) ? channel.EncodedWords[prevIndex - 1] : 0);
 
                 if (prevPrevValue != 235 && IsDigit(prevValue))
                 {
@@ -1478,8 +1403,6 @@ namespace DataMatrix.net
 
         private void ChangeEncScheme(DmtxChannel channel, DmtxScheme targetScheme, DmtxUnlatch unlatchType)
         {
-            int advance;
-
             if (channel.EncScheme == targetScheme)
             {
                 throw new Exception("Target scheme already equals channel scheme, cannot be changed!");
@@ -1542,7 +1465,7 @@ namespace DataMatrix.net
                     }
 
                     /* Advance progress to next byte boundary */
-                    advance = (channel.CurrentLength % 4) * 3;
+                    int advance = (channel.CurrentLength % 4) * 3;
                     channel.CurrentLength += advance;
                     channel.EncodedLength += advance;
                     /* assert(remaining bits are zero); */
@@ -1560,9 +1483,6 @@ namespace DataMatrix.net
                        number of codewords allocated since this is checked every time
                        a new Base 256 codeword is pushed to the channel. */
                     break;
-
-                default:
-                    break;
             }
             channel.EncScheme = DmtxScheme.DmtxSchemeAscii;
 
@@ -1573,30 +1493,28 @@ namespace DataMatrix.net
                     /* Nothing to do */
                     break;
                 case DmtxScheme.DmtxSchemeC40:
-                    PushInputWord(channel, (byte)DmtxConstants.DmtxCharC40Latch);
+                    PushInputWord(channel, DmtxConstants.DmtxCharC40Latch);
                     IncrementProgress(channel, 12);
                     break;
                 case DmtxScheme.DmtxSchemeText:
-                    PushInputWord(channel, (byte)DmtxConstants.DmtxCharTextLatch);
+                    PushInputWord(channel, DmtxConstants.DmtxCharTextLatch);
                     IncrementProgress(channel, 12);
                     break;
                 case DmtxScheme.DmtxSchemeX12:
-                    PushInputWord(channel, (byte)DmtxConstants.DmtxCharX12Latch);
+                    PushInputWord(channel, DmtxConstants.DmtxCharX12Latch);
                     IncrementProgress(channel, 12);
                     break;
                 case DmtxScheme.DmtxSchemeEdifact:
-                    PushInputWord(channel, (byte)DmtxConstants.DmtxCharEdifactLatch);
+                    PushInputWord(channel, DmtxConstants.DmtxCharEdifactLatch);
                     IncrementProgress(channel, 12);
                     break;
                 case DmtxScheme.DmtxSchemeBase256:
-                    PushInputWord(channel, (byte)DmtxConstants.DmtxCharBase256Latch);
+                    PushInputWord(channel, DmtxConstants.DmtxCharBase256Latch);
                     IncrementProgress(channel, 12);
 
                     /* Write temporary field length (0 indicates remainder of symbol) */
                     PushInputWord(channel, Randomize255State(0, 2));
                     IncrementProgress(channel, 12);
-                    break;
-                default:
                     break;
             }
             channel.EncScheme = targetScheme;
@@ -1617,9 +1535,6 @@ namespace DataMatrix.net
 
         private void IncrementProgress(DmtxChannel channel, int encodedUnits)
         {
-            int startByte, pos;
-            DmtxTriplet triplet;
-
             /* XXX this function became a misnomer when we started incrementing by
              * an amount other than what was specified with the C40/Text exception.
              * Maybe a new name/convention is in order.
@@ -1634,9 +1549,9 @@ namespace DataMatrix.net
             if (channel.EncScheme == DmtxScheme.DmtxSchemeC40 || channel.EncScheme == DmtxScheme.DmtxSchemeText)
             {
 
-                pos = (channel.CurrentLength % 6) / 2;
-                startByte = (channel.CurrentLength / 12) - (pos >> 1);
-                triplet = GetTripletValues(channel.EncodedWords[startByte], channel.EncodedWords[startByte + 1]);
+                int pos = (channel.CurrentLength % 6) / 2;
+                int startByte = (channel.CurrentLength / 12) - (pos >> 1);
+                DmtxTriplet triplet = GetTripletValues(channel.EncodedWords[startByte], channel.EncodedWords[startByte + 1]);
 
                 /* Note that we will alway increment progress according to a whole
                    input codeword, so the value at "pos" is guaranteed to not be in

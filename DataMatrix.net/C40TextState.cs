@@ -29,43 +29,16 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DataMatrix.net
 {
     internal struct C40TextState
     {
-        #region Fields
-        int _shift;
-        bool _upperShift;
-        #endregion
-
         #region Properties
-        internal int Shift
-        {
-            get
-            {
-                return _shift;
-            }
-            set
-            {
-                _shift = value;
-            }
-        }
 
-        internal bool UpperShift
-        {
-            get
-            {
-                return _upperShift;
-            }
-            set
-            {
-                _upperShift = value;
-            }
-        }
+        internal int Shift { get; set; }
+
+        internal bool UpperShift { get; set; }
+
         #endregion
 
     }

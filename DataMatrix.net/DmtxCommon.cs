@@ -29,8 +29,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataMatrix.net
 {
@@ -40,7 +38,6 @@ namespace DataMatrix.net
         {
             byte[] g = new byte[69];
             byte[] b = new byte[68];
-            int bIndex = 0; ;
 
             int symbolDataWords = GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx);
             int symbolErrorWords = GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolErrorWords, sizeIdx);
@@ -87,7 +84,7 @@ namespace DataMatrix.net
                 }
 
                 int blockDataWords = GetBlockDataSize(sizeIdx, block);
-                bIndex = blockErrorWords;
+                int bIndex = blockErrorWords;
 
                 for (int i = block + (step * blockDataWords); i < symbolTotalWords; i += step)
                 {
@@ -105,8 +102,8 @@ namespace DataMatrix.net
         {
             if (a == 0 || b == 0)
                 return 0;
-            else
-                return (byte)DmtxConstants.aLogVal[(DmtxConstants.logVal[a] + DmtxConstants.logVal[b]) % 255];
+            
+            return (byte)DmtxConstants.aLogVal[(DmtxConstants.logVal[a] + DmtxConstants.logVal[b]) % 255];
         }
 
         private static byte GfSum(byte a, byte b)
@@ -118,10 +115,10 @@ namespace DataMatrix.net
         {
             if (a == 0) /* XXX this is right, right? */
                 return 0;
-            else if (b == 0)
+            if (b == 0)
                 return a; /* XXX this is right, right? */
-            else
-                return (byte)DmtxConstants.aLogVal[(DmtxConstants.logVal[a] + b) % 255];
+            
+            return (byte)DmtxConstants.aLogVal[(DmtxConstants.logVal[a] + b) % 255];
         }
 
         internal static int GetSymbolAttribute(DmtxSymAttribute attribute, DmtxSymbolSize sizeIdx)
@@ -168,7 +165,7 @@ namespace DataMatrix.net
         {
             int symbolDataWords = GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx);
             int interleavedBlocks = GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribInterleavedBlocks, sizeIdx);
-            int count = (int)(symbolDataWords / interleavedBlocks);
+            int count = symbolDataWords / interleavedBlocks;
 
             if (symbolDataWords < 1 || interleavedBlocks < 1)
                 return DmtxConstants.DmtxUndefined;
@@ -178,7 +175,6 @@ namespace DataMatrix.net
 
         internal static DmtxSymbolSize FindCorrectSymbolSize(int dataWords, DmtxSymbolSize sizeIdxRequest)
         {
-            DmtxSymbolSize idxBeg, idxEnd;
             DmtxSymbolSize sizeIdx;
             if (dataWords <= 0)
             {
@@ -187,7 +183,8 @@ namespace DataMatrix.net
 
             if (sizeIdxRequest == DmtxSymbolSize.DmtxSymbolSquareAuto || sizeIdxRequest == DmtxSymbolSize.DmtxSymbolRectAuto)
             {
-
+                DmtxSymbolSize idxBeg;
+                DmtxSymbolSize idxEnd;
                 if (sizeIdxRequest == DmtxSymbolSize.DmtxSymbolSquareAuto)
                 {
                     idxBeg = 0;
@@ -249,8 +246,6 @@ namespace DataMatrix.net
                 case DmtxPackOrder.DmtxPack32bppXBGR:
                 case DmtxPackOrder.DmtxPack32bppCMYK:
                     return 32;
-                default:
-                    break;
             }
 
             return DmtxConstants.DmtxUndefined;
@@ -268,20 +263,18 @@ namespace DataMatrix.net
 
         internal static bool DecodeCheckErrors(byte[] code, int codeIndex, DmtxSymbolSize sizeIdx, int fix)
         {
-            int i, j;
-            int blockTotalWords;
-            //struct rs *rs;
             byte[] data = new byte[255];
 
             int interleavedBlocks = GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribInterleavedBlocks, sizeIdx);
             int blockErrorWords = GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribBlockErrorWords, sizeIdx);
-            int blockMaxCorrectable = GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribBlockMaxCorrectable, sizeIdx);
 
-            int fixedErr = 0, fixedErrSum = 0;
-            for (i = 0; i < interleavedBlocks; i++)
+            const int fixedErr = 0;
+            int fixedErrSum = 0;
+            for (int i = 0; i < interleavedBlocks; i++)
             {
-                blockTotalWords = blockErrorWords + GetBlockDataSize(sizeIdx, i);
+                int blockTotalWords = blockErrorWords + GetBlockDataSize(sizeIdx, i);
 
+                int j;
                 for (j = 0; j < blockTotalWords; j++)
                     data[j] = code[j * interleavedBlocks + i];
 
@@ -301,11 +294,8 @@ namespace DataMatrix.net
 
         internal static double RightAngleTrueness(DmtxVector2 c0, DmtxVector2 c1, DmtxVector2 c2, double angle)
         {
-            DmtxVector2 vA, vB;
-
-
-            vA = (c0 - c1);
-            vB = (c2 - c1);
+            DmtxVector2 vA = (c0 - c1);
+            DmtxVector2 vB = (c2 - c1);
             vA.Norm();
             vB.Norm();
 

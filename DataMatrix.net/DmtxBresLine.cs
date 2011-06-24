@@ -29,8 +29,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataMatrix.net
 {
@@ -56,9 +54,9 @@ namespace DataMatrix.net
         internal DmtxBresLine(DmtxBresLine orig)
         {
             this._error = orig._error;
-            this._loc = new DmtxPixelLoc() { X = orig._loc.X, Y = orig._loc.Y };
-            this._loc0 = new DmtxPixelLoc() { X = orig._loc0.X, Y = orig._loc0.Y };
-            this._loc1 = new DmtxPixelLoc() { X = orig._loc1.X, Y = orig._loc1.Y };
+            this._loc = new DmtxPixelLoc { X = orig._loc.X, Y = orig._loc.Y };
+            this._loc0 = new DmtxPixelLoc { X = orig._loc0.X, Y = orig._loc0.Y };
+            this._loc1 = new DmtxPixelLoc { X = orig._loc1.X, Y = orig._loc1.Y };
             this._outward = orig._outward;
             this._steep = orig._steep;
             this._travel = orig._travel;

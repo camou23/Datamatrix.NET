@@ -28,13 +28,11 @@ Contact: Michael Faschinger - michfasch@gmx.at
  
 */
 
-using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Globalization;
 
 namespace DataMatrix.net
@@ -58,9 +56,7 @@ namespace DataMatrix.net
 
         public Bitmap EncodeImageMosaic(string val, int dotSize, int margin)
         {
-            DmtxImageEncoderOptions options = new DmtxImageEncoderOptions();
-            options.MarginSize = margin;
-            options.ModuleSize = dotSize;
+            DmtxImageEncoderOptions options = new DmtxImageEncoderOptions {MarginSize = margin, ModuleSize = dotSize};
             return EncodeImageMosaic(val, options);
         }
 
@@ -71,10 +67,12 @@ namespace DataMatrix.net
 
         private Bitmap EncodeImage(string val, DmtxImageEncoderOptions options, bool isMosaic)
         {
-            DmtxEncode encode = new DmtxEncode();
-            encode.ModuleSize = options.ModuleSize;
-            encode.MarginSize = options.MarginSize;
-            encode.SizeIdxRequest = options.SizeIdx;
+            DmtxEncode encode = new DmtxEncode
+                                    {
+                                        ModuleSize = options.ModuleSize,
+                                        MarginSize = options.MarginSize,
+                                        SizeIdxRequest = options.SizeIdx
+                                    };
             byte[] valAsByteArray = GetRawDataAndSetEncoding(val, options, encode);
             if (isMosaic)
             {
@@ -113,9 +111,7 @@ namespace DataMatrix.net
 
         public Bitmap EncodeImage(string val, int dotSize, int margin)
         {
-            DmtxImageEncoderOptions options = new DmtxImageEncoderOptions();
-            options.MarginSize = margin;
-            options.ModuleSize = dotSize;
+            DmtxImageEncoderOptions options = new DmtxImageEncoderOptions {MarginSize = margin, ModuleSize = dotSize};
             return EncodeImage(val, options);
         }
 
@@ -141,11 +137,13 @@ namespace DataMatrix.net
 
         public string EncodeSvgImage(string val, int dotSize, int margin, Color foreColor, Color backColor)
         {
-            DmtxImageEncoderOptions options = new DmtxImageEncoderOptions();
-            options.ModuleSize = dotSize;
-            options.MarginSize = margin;
-            options.ForeColor = foreColor;
-            options.BackColor = backColor;
+            DmtxImageEncoderOptions options = new DmtxImageEncoderOptions
+                                                  {
+                                                      ModuleSize = dotSize,
+                                                      MarginSize = margin,
+                                                      ForeColor = foreColor,
+                                                      BackColor = backColor
+                                                  };
             return EncodeSvgImage(val, options);
         }
 
@@ -156,11 +154,13 @@ namespace DataMatrix.net
 
         public bool[,] EncodeRawData(string val, DmtxImageEncoderOptions options)
         {
-            DmtxEncode encode = new DmtxEncode();
-            encode.ModuleSize = 1;
-            encode.MarginSize = 0;
-            encode.SizeIdxRequest = options.SizeIdx;
-            encode.Scheme = options.Scheme;
+            DmtxEncode encode = new DmtxEncode
+                                    {
+                                        ModuleSize = 1,
+                                        MarginSize = 0,
+                                        SizeIdxRequest = options.SizeIdx,
+                                        Scheme = options.Scheme
+                                    };
 
             byte[] valAsByteArray = GetRawDataAndSetEncoding(val, options, encode);
 
@@ -171,11 +171,13 @@ namespace DataMatrix.net
 
         public string EncodeSvgImage(string val, DmtxImageEncoderOptions options)
         {
-            DmtxEncode encode = new DmtxEncode();
-            encode.ModuleSize = options.ModuleSize;
-            encode.MarginSize = options.MarginSize;
-            encode.SizeIdxRequest = options.SizeIdx;
-            encode.Scheme = options.Scheme;
+            DmtxEncode encode = new DmtxEncode
+                                    {
+                                        ModuleSize = options.ModuleSize,
+                                        MarginSize = options.MarginSize,
+                                        SizeIdxRequest = options.SizeIdx,
+                                        Scheme = options.Scheme
+                                    };
 
             byte[] valAsByteArray = GetRawDataAndSetEncoding(val, options, encode);
 
@@ -228,23 +230,18 @@ namespace DataMatrix.net
             return newData;
         }
 
-        private static NumberFormatInfo dotFormatProvider;
+        private static NumberFormatInfo _dotFormatProvider;
 
         internal string EncodeSvgFile(DmtxEncode enc, string format, int moduleSize, int margin, Color foreColor, Color backColor)
         {
-            int col, row, rowInv;
-            int symbolCols, symbolRows;
-            int width, height, module;
             bool defineOnly = false;
-            //byte mosaicRed, mosaicGrn, mosaicBlu;
             string idString = null;
-            string style = "";
+            string style;
             string outputString = "";
 
-            if (dotFormatProvider == null)
+            if (_dotFormatProvider == null)
             {
-                dotFormatProvider = new NumberFormatInfo();
-                dotFormatProvider.NumberDecimalSeparator = ".";
+                _dotFormatProvider = new NumberFormatInfo {NumberDecimalSeparator = "."};
             }
 
             if (format == "svg:")
@@ -258,11 +255,11 @@ namespace DataMatrix.net
                 idString = "dmtx_0001";
             }
 
-            width = 2 * enc.MarginSize + (enc.Region.SymbolCols * enc.ModuleSize);
-            height = 2 * enc.MarginSize + (enc.Region.SymbolRows * enc.ModuleSize);
+            int width = 2 * enc.MarginSize + (enc.Region.SymbolCols * enc.ModuleSize);
+            int height = 2 * enc.MarginSize + (enc.Region.SymbolRows * enc.ModuleSize);
 
-            symbolCols = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolCols, enc.Region.SizeIdx);
-            symbolRows = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolRows, enc.Region.SizeIdx);
+            int symbolCols = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolCols, enc.Region.SizeIdx);
+            int symbolRows = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolRows, enc.Region.SizeIdx);
 
             /* Print SVG Header */
             if (!defineOnly)
@@ -286,21 +283,20 @@ namespace DataMatrix.net
             if (backColor != Color.White)
             {
                 style = string.Format("style=\"fill:#{0}{1}{2};fill-opacity:{3};stroke:none\" ",
-                              backColor.R.ToString("X2"), backColor.G.ToString("X2"), backColor.B.ToString("X2"), ((double)backColor.A / (double)byte.MaxValue).ToString("0.##", dotFormatProvider));
+                              backColor.R.ToString("X2"), backColor.G.ToString("X2"), backColor.B.ToString("X2"), ((double)backColor.A / (double)byte.MaxValue).ToString("0.##", _dotFormatProvider));
                 outputString += string.Format("    <rect width=\"{0}\" height=\"{1}\" x=\"0\" y=\"0\" {2}/>\n",
                       width, height, style);
-                style = "";
             }
 
             /* Write Data Matrix ON modules */
-            for (row = 0; row < enc.Region.SymbolRows; row++)
+            for (int row = 0; row < enc.Region.SymbolRows; row++)
             {
-                rowInv = enc.Region.SymbolRows - row - 1;
-                for (col = 0; col < enc.Region.SymbolCols; col++)
+                int rowInv = enc.Region.SymbolRows - row - 1;
+                for (int col = 0; col < enc.Region.SymbolCols; col++)
                 {
-                    module = enc.Message.SymbolModuleStatus(enc.Region.SizeIdx, row, col);
+                    int module = enc.Message.SymbolModuleStatus(enc.Region.SizeIdx, row, col);
                     style = string.Format("style=\"fill:#{0}{1}{2};fill-opacity:{3};stroke:none\" ",
-                          foreColor.R.ToString("X2"), foreColor.G.ToString("X2"), foreColor.B.ToString("X2"), ((double)foreColor.A / (double)byte.MaxValue).ToString("0.##", dotFormatProvider));
+                          foreColor.R.ToString("X2"), foreColor.G.ToString("X2"), foreColor.B.ToString("X2"), ((double)foreColor.A / (double)byte.MaxValue).ToString("0.##", _dotFormatProvider));
 
                     if ((module & DmtxConstants.DmtxModuleOn) != 0)
                     {

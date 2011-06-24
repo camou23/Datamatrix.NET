@@ -29,8 +29,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataMatrix.net
 {
@@ -51,7 +49,7 @@ namespace DataMatrix.net
         /// <param name="src">the matrix to copy</param>
         internal DmtxMatrix3(DmtxMatrix3 src)
         {
-            _data = new double[3, 3] { { src[0, 0], src[0, 1], src[0, 2] }, { src[1, 0], src[1, 1], src[1, 2] }, { src[2, 0], src[2, 1], src[2, 2] } };
+            _data = new[,] { { src[0, 0], src[0, 1], src[0, 2] }, { src[1, 0], src[1, 1], src[1, 2] }, { src[2, 0], src[2, 1], src[2, 2] } };
         }
         #endregion
 
@@ -77,8 +75,7 @@ namespace DataMatrix.net
         /// <param name="ty"></param>
         internal static DmtxMatrix3 Translate(double tx, double ty)
         {
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 }, { tx, ty, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3 {_data = new[,] {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {tx, ty, 1.0}}};
             return result;
         }
 
@@ -91,8 +88,9 @@ namespace DataMatrix.net
         /// <param name="angle"></param>
         internal static DmtxMatrix3 Rotate(double angle)
         {
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { Math.Cos(angle), Math.Sin(angle), 0.0 }, { -Math.Sin(angle), Math.Cos(angle), 0.0 }, { 0, 0, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3 { _data = new[,] { 
+                {Math.Cos(angle), Math.Sin(angle), 0.0}, 
+                {-Math.Sin(angle), Math.Cos(angle), 0.0}, {0, 0, 1.0} }};
             return result;
         }
 
@@ -107,8 +105,7 @@ namespace DataMatrix.net
         /// <returns></returns>
         internal static DmtxMatrix3 Scale(double sx, double sy)
         {
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { sx, 0.0, 0.0 }, { 0.0, sy, 0.0 }, { 0, 0, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3 {_data = new[,] {{sx, 0.0, 0.0}, {0.0, sy, 0.0}, {0, 0, 1.0}}};
             return result;
         }
 
@@ -118,13 +115,10 @@ namespace DataMatrix.net
         /// shy 0 0<para />
         /// 0 0 1
         /// </summary>
-        /// <param name="sx"></param>
-        /// <param name="sy"></param>
         /// <returns></returns>
         internal static DmtxMatrix3 Shear(double shx, double shy)
         {
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { 1.0, shy, 0.0 }, { shx, 1.0, 0.0 }, { 0, 0, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3 {_data = new[,] {{1.0, shy, 0.0}, {shx, 1.0, 0.0}, {0, 0, 1.0}}};
             return result;
         }
 
@@ -134,8 +128,6 @@ namespace DataMatrix.net
         /// 0 sz/b0 0<para />
         /// 0 0 1
         /// </summary>
-        /// <param name="sx"></param>
-        /// <param name="sy"></param>
         /// <returns></returns>
         internal static DmtxMatrix3 LineSkewTop(double b0, double b1, double sz)
         {
@@ -143,8 +135,8 @@ namespace DataMatrix.net
             {
                 throw new ArgumentException("b0 must be larger than zero in top line skew transformation");
             }
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { b1 / b0, 0.0, (b1 - b0) / (sz * b0) }, { 0.0, sz / b0, 0.0 }, { 0, 0, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3
+                {_data = new[,] {{b1/b0, 0.0, (b1 - b0)/(sz*b0)}, {0.0, sz/b0, 0.0}, {0, 0, 1.0}}};
             return result;
         }
 
@@ -155,8 +147,6 @@ namespace DataMatrix.net
         /// 0 b0/sz 0<para />
         /// 0 0 1
         /// </summary>
-        /// <param name="sx"></param>
-        /// <param name="sy"></param>
         /// <returns></returns>
         internal static DmtxMatrix3 LineSkewTopInv(double b0, double b1, double sz)
         {
@@ -164,8 +154,8 @@ namespace DataMatrix.net
             {
                 throw new ArgumentException("b1 must be larger than zero in top line skew transformation (inverse)");
             }
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { b0 / b1, 0.0, (b0 - b1) / (sz * b1) }, { 0.0, b0 / sz, 0.0 }, { 0, 0, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3
+                                     {_data = new[,] {{b0/b1, 0.0, (b0 - b1)/(sz*b1)}, {0.0, b0/sz, 0.0}, {0, 0, 1.0}}};
             return result;
         }
 
@@ -175,8 +165,6 @@ namespace DataMatrix.net
         /// 0 b1/b0 (b1-b0)/(sz*b0)<para />
         /// 0 0 1
         /// </summary>
-        /// <param name="sx"></param>
-        /// <param name="sy"></param>
         /// <returns></returns>
         internal static DmtxMatrix3 LineSkewSide(double b0, double b1, double sz)
         {
@@ -184,8 +172,8 @@ namespace DataMatrix.net
             {
                 throw new ArgumentException("b0 must be larger than zero in side line skew transformation (inverse)");
             }
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { sz / b0, 0.0, 0.0 }, { 0.0, b1 / b0, (b1 - b0) / (sz * b0) }, { 0, 0, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3
+                                     {_data = new[,] {{sz/b0, 0.0, 0.0}, {0.0, b1/b0, (b1 - b0)/(sz*b0)}, {0, 0, 1.0}}};
             return result;
         }
 
@@ -195,8 +183,6 @@ namespace DataMatrix.net
         /// 0 b0/b1 (b0 - b1) / (sz * b1)<para />
         /// 0 0 1
         /// </summary>
-        /// <param name="sx"></param>
-        /// <param name="sy"></param>
         /// <returns></returns>
         internal static DmtxMatrix3 LineSkewSideInv(double b0, double b1, double sz)
         {
@@ -204,15 +190,14 @@ namespace DataMatrix.net
             {
                 throw new ArgumentException("b1 must be larger than zero in top line skew transformation (inverse)");
             }
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { b0 / sz, 0.0, 0.0 }, { 0.0, b0 / b1, (b0 - b1) / (sz * b1) }, { 0, 0, 1.0 } };
+            DmtxMatrix3 result = new DmtxMatrix3
+                                     {_data = new[,] {{b0/sz, 0.0, 0.0}, {0.0, b0/b1, (b0 - b1)/(sz*b1)}, {0, 0, 1.0}}};
             return result;
         }
 
         public static DmtxMatrix3 operator *(DmtxMatrix3 m1, DmtxMatrix3 m2)
         {
-            DmtxMatrix3 result = new DmtxMatrix3();
-            result._data = new double[3, 3] { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
+            DmtxMatrix3 result = new DmtxMatrix3 {_data = new[,] {{0.0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
 
             for (int i = 0; i < 3; i++)
             {

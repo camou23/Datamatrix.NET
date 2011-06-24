@@ -29,51 +29,39 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 
 namespace DataMatrix.net
 {
     internal class DmtxImage
     {
         #region Fields
-        int _width;
-        int _height;
-        DmtxPackOrder _pixelPacking;
-        int _bitsPerPixel;
-        int _bytesPerPixel;
+
         int _rowPadBytes;
-        int _rowSizeBytes;
-        DmtxFlip _imageFlip;
-        int _channelCount;
-        int[] _channelStart;
-        int[] _bitsPerChannel;
-        byte[] _pxl;
+
         #endregion
 
         #region Constructor
         internal DmtxImage(byte[] pxl, int width, int height, DmtxPackOrder pack)
         {
-            _bitsPerChannel = new int[4];
-            _channelStart = new int[4];
+            this.BitsPerChannel = new int[4];
+            this.ChannelStart = new int[4];
             if (pxl == null || width < 1 || height < 1)
             {
                 throw new ArgumentException("Cannot create image of size null");
             }
 
-            this._pxl = pxl;
-            this._width = width;
-            this._height = height;
-            this._pixelPacking = pack;
-            this._bitsPerPixel = DmtxCommon.GetBitsPerPixel(pack);
-            this._bytesPerPixel = this._bitsPerPixel / 8;
+            this.Pxl = pxl;
+            this.Width = width;
+            this.Height = height;
+            this.PixelPacking = pack;
+            this.BitsPerPixel = DmtxCommon.GetBitsPerPixel(pack);
+            this.BytesPerPixel = this.BitsPerPixel / 8;
             this._rowPadBytes = 0;
-            this._rowSizeBytes = this._width * this._bytesPerPixel + this._rowPadBytes;
-            this._imageFlip = DmtxFlip.DmtxFlipNone;
+            this.RowSizeBytes = this.Width * this.BytesPerPixel + this._rowPadBytes;
+            this.ImageFlip = DmtxFlip.DmtxFlipNone;
 
             /* Leave channelStart[] and bitsPerChannel[] with zeros from calloc */
-            this._channelCount = 0;
+            this.ChannelCount = 0;
 
             switch (pack)
             {
@@ -133,21 +121,21 @@ namespace DataMatrix.net
         #region Methods
         internal bool SetChannel(int channelStart, int bitsPerChannel)
         {
-            if (this._channelCount >= 4) /* IMAGE_MAX_CHANNEL */
+            if (this.ChannelCount >= 4) /* IMAGE_MAX_CHANNEL */
                 return false;
 
             /* New channel extends beyond pixel data */
 
-            this._bitsPerChannel[this._channelCount] = bitsPerChannel;
-            this._channelStart[this._channelCount] = channelStart;
-            (this._channelCount)++;
+            this.BitsPerChannel[this.ChannelCount] = bitsPerChannel;
+            this.ChannelStart[this.ChannelCount] = channelStart;
+            (this.ChannelCount)++;
 
             return true;
         }
 
         internal int GetByteOffset(int x, int y)
         {
-            if (this._imageFlip == DmtxFlip.DmtxFlipX)
+            if (this.ImageFlip == DmtxFlip.DmtxFlipX)
             {
                 throw new ArgumentException("DmtxFlipX is not an option!");
             }
@@ -155,15 +143,15 @@ namespace DataMatrix.net
             if (!ContainsInt(0, x, y))
                 return DmtxConstants.DmtxUndefined;
 
-            if (this._imageFlip == DmtxFlip.DmtxFlipY)
-                return (y * this._rowSizeBytes + x * this._bytesPerPixel);
+            if (this.ImageFlip == DmtxFlip.DmtxFlipY)
+                return (y * this.RowSizeBytes + x * this.BytesPerPixel);
 
-            return ((this._height - y - 1) * this._rowSizeBytes + x * this._bytesPerPixel);
+            return ((this.Height - y - 1) * this.RowSizeBytes + x * this.BytesPerPixel);
         }
 
         internal bool GetPixelValue(int x, int y, int channel, ref int value)
         {
-            if (channel >= this._channelCount)
+            if (channel >= this.ChannelCount)
             {
                 throw new ArgumentException("Channel greater than channel count!");
             }
@@ -174,18 +162,18 @@ namespace DataMatrix.net
                 return false;
             }
 
-            switch (this._bitsPerChannel[channel])
+            switch (this.BitsPerChannel[channel])
             {
                 case 1:
                     break;
                 case 5:
                     break;
                 case 8:
-                    if (this._channelStart[channel] % 8 != 0 || this._bitsPerPixel % 8 != 0)
+                    if (this.ChannelStart[channel] % 8 != 0 || this.BitsPerPixel % 8 != 0)
                     {
                         throw new Exception("Error getting pixel value");
                     }
-                    value = this._pxl[offset + channel];
+                    value = this.Pxl[offset + channel];
                     break;
             }
 
@@ -194,7 +182,7 @@ namespace DataMatrix.net
 
         internal bool SetPixelValue(int x, int y, int channel, byte value)
         {
-            if (channel >= this._channelCount)
+            if (channel >= this.ChannelCount)
             {
                 throw new ArgumentException("Channel greater than channel count!");
             }
@@ -205,18 +193,18 @@ namespace DataMatrix.net
                 return false;
             }
 
-            switch (this._bitsPerChannel[channel])
+            switch (this.BitsPerChannel[channel])
             {
                 case 1:
                     break;
                 case 5:
                     break;
                 case 8:
-                    if (this._channelStart[channel] % 8 != 0 || this._bitsPerPixel % 8 != 0)
+                    if (this.ChannelStart[channel] % 8 != 0 || this.BitsPerPixel % 8 != 0)
                     {
                         throw new Exception("Error getting pixel value");
                     }
-                    this._pxl[offset + channel] = value;
+                    this.Pxl[offset + channel] = value;
                     break;
             }
 
@@ -225,8 +213,8 @@ namespace DataMatrix.net
 
         internal bool ContainsInt(int margin, int x, int y)
         {
-            if (x - margin >= 0 && x + margin < this._width &&
-                  y - margin >= 0 && y + margin < this._height)
+            if (x - margin >= 0 && x + margin < this.Width &&
+                  y - margin >= 0 && y + margin < this.Height)
                 return true;
 
             return false;
@@ -234,7 +222,7 @@ namespace DataMatrix.net
 
         internal bool ContainsFloat(double x, double y)
         {
-            if (x >= 0.0 && x < (double)this._width && y >= 0.0 && y < (double)this._height)
+            if (x >= 0.0 && x < this.Width && y >= 0.0 && y < this.Height)
             {
                 return true;
             }
@@ -243,35 +231,16 @@ namespace DataMatrix.net
         #endregion
 
         #region Properties
-        internal int Width
-        {
-            get { return _width; }
-            set { _width = value; }
-        }
 
-        internal int Height
-        {
-            get { return _height; }
-            set { _height = value; }
-        }
+        internal int Width { get; set; }
 
-        internal DmtxPackOrder PixelPacking
-        {
-            get { return _pixelPacking; }
-            set { _pixelPacking = value; }
-        }
+        internal int Height { get; set; }
 
-        internal int BitsPerPixel
-        {
-            get { return _bitsPerPixel; }
-            set { _bitsPerPixel = value; }
-        }
+        internal DmtxPackOrder PixelPacking { get; set; }
 
-        internal int BytesPerPixel
-        {
-            get { return _bytesPerPixel; }
-            set { _bytesPerPixel = value; }
-        }
+        internal int BitsPerPixel { get; set; }
+
+        internal int BytesPerPixel { get; set; }
 
         internal int RowPadBytes
         {
@@ -279,45 +248,22 @@ namespace DataMatrix.net
             set
             {
                 _rowPadBytes = value;
-                this._rowSizeBytes = this._width * (this._bitsPerPixel / 8) + this._rowPadBytes;
+                this.RowSizeBytes = this.Width * (this.BitsPerPixel / 8) + this._rowPadBytes;
             }
         }
 
-        internal int RowSizeBytes
-        {
-            get { return _rowSizeBytes; }
-            set { _rowSizeBytes = value; }
-        }
+        internal int RowSizeBytes { get; set; }
 
-        internal DmtxFlip ImageFlip
-        {
-            get { return _imageFlip; }
-            set { _imageFlip = value; }
-        }
+        internal DmtxFlip ImageFlip { get; set; }
 
-        internal int ChannelCount
-        {
-            get { return _channelCount; }
-            set { _channelCount = value; }
-        }
+        internal int ChannelCount { get; set; }
 
-        internal int[] ChannelStart
-        {
-            get { return _channelStart; }
-            set { _channelStart = value; }
-        }
+        internal int[] ChannelStart { get; set; }
 
-        internal int[] BitsPerChannel
-        {
-            get { return _bitsPerChannel; }
-            set { _bitsPerChannel = value; }
-        }
+        internal int[] BitsPerChannel { get; set; }
 
-        internal byte[] Pxl
-        {
-            get { return _pxl; }
-            set { _pxl = value; }
-        }
+        internal byte[] Pxl { get; set; }
+
         #endregion
     }
 }

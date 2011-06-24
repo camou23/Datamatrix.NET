@@ -29,8 +29,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataMatrix.net
 {
@@ -38,10 +36,7 @@ namespace DataMatrix.net
     {
         #region Fields
         int _outputIdx;     /* Internal index used to store output progress */
-        int _padCount;
-        byte[] _array;         /* internal representation of Data Matrix modules */
-        byte[] _code;          /* internal storage of code words (data and error) */
-        byte[] _output;        /* internal storage of decoded output */
+
         #endregion
 
         #region Constructors
@@ -54,12 +49,12 @@ namespace DataMatrix.net
             int mappingRows = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixRows, sizeIdx);
             int mappingCols = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixCols, sizeIdx);
 
-            _array = new byte[mappingCols * mappingRows];
+            this.Array = new byte[mappingCols * mappingRows];
 
             int codeSize = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx) + DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolErrorWords, sizeIdx);
-            _code = new byte[codeSize];
+            this.Code = new byte[codeSize];
 
-            _output = new byte[10 * codeSize];
+            this.Output = new byte[10 * codeSize];
         }
         #endregion
 
@@ -67,15 +62,12 @@ namespace DataMatrix.net
         internal void DecodeDataStream(DmtxSymbolSize sizeIdx, byte[] outputStart)
         {
             bool macro = false;
-            DmtxScheme encScheme;
-            int dataEndIndex;
-            byte[] ptr;
 
-            this._output = (outputStart == null) ? this._output : outputStart;
+            this.Output = outputStart ?? this.Output;
             this._outputIdx = 0;
 
-            ptr = this._code;
-            dataEndIndex = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx);
+            byte[] ptr = this.Code;
+            int dataEndIndex = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribSymbolDataWords, sizeIdx);
 
             /* Print macro header if first codeword triggers it */
             if (ptr[0] == DmtxConstants.DmtxChar05Macro || ptr[0] == DmtxConstants.DmtxChar06Macro)
@@ -87,7 +79,7 @@ namespace DataMatrix.net
             for (int codeIter = 0; codeIter < dataEndIndex; )
             {
 
-                encScheme = GetEncodationScheme(this._code[codeIter]);
+                DmtxScheme encScheme = GetEncodationScheme(this.Code[codeIter]);
                 if (encScheme != DmtxScheme.DmtxSchemeAscii)
                     codeIter++;
 
@@ -109,9 +101,6 @@ namespace DataMatrix.net
                     case DmtxScheme.DmtxSchemeBase256:
                         codeIter = DecodeSchemeBase256(codeIter, dataEndIndex);
                         break;
-                    default:
-                        /* error */
-                        break;
                 }
             }
 
@@ -127,7 +116,7 @@ namespace DataMatrix.net
             PushOutputWord((byte)'[');
             PushOutputWord((byte)')');
             PushOutputWord((byte)'>');
-            PushOutputWord((byte)30); /* ASCII RS */
+            PushOutputWord(30); /* ASCII RS */
             PushOutputWord((byte)'0');
 
             if (macroType == DmtxConstants.DmtxChar05Macro)
@@ -143,18 +132,18 @@ namespace DataMatrix.net
                 throw new ArgumentException("Macro Header only supported for char05 and char06");
             }
 
-            PushOutputWord((byte)29); /* ASCII GS */
+            PushOutputWord(29); /* ASCII GS */
         }
 
         void PushOutputMacroTrailer()
         {
-            PushOutputWord((byte)30); /* ASCII RS */
-            PushOutputWord((byte)4);  /* ASCII EOT */
+            PushOutputWord(30); /* ASCII RS */
+            PushOutputWord(4);  /* ASCII EOT */
         }
 
         void PushOutputWord(byte value)
         {
-            this._output[this._outputIdx++] = value;
+            this.Output[this._outputIdx++] = value;
         }
 
         static DmtxScheme GetEncodationScheme(byte val)
@@ -184,23 +173,21 @@ namespace DataMatrix.net
 
         int DecodeSchemeAscii(int startIndex, int endIndex)
         {
-            byte codeword, digits;
-
             bool upperShift = false;
 
             while (startIndex < endIndex)
             {
 
-                codeword = this._code[startIndex];
+                byte codeword = this.Code[startIndex];
 
-                if (GetEncodationScheme(_code[startIndex]) != DmtxScheme.DmtxSchemeAscii)
+                if (GetEncodationScheme(this.Code[startIndex]) != DmtxScheme.DmtxSchemeAscii)
                     return startIndex;
-                else
-                    startIndex++;
+                
+                startIndex++;
 
                 if (upperShift)
                 {
-                    PushOutputWord((byte)(codeword + (byte)127));
+                    PushOutputWord((byte)(codeword + 127));
                     upperShift = false;
                 }
                 else if (codeword == DmtxConstants.DmtxCharAsciiUpperShift)
@@ -209,7 +196,7 @@ namespace DataMatrix.net
                 }
                 else if (codeword == DmtxConstants.DmtxCharAsciiPad)
                 {
-                    this._padCount = endIndex - startIndex;
+                    this.PadCount = endIndex - startIndex;
                     return endIndex;
                 }
                 else if (codeword <= 128)
@@ -218,7 +205,7 @@ namespace DataMatrix.net
                 }
                 else if (codeword <= 229)
                 {
-                    digits = (byte)(codeword - (byte)130);
+                    byte digits = (byte)(codeword - 130);
                     PushOutputWord((byte)(digits / 10 + '0'));
                     PushOutputWord((byte)(digits - (digits / 10) * 10 + '0'));
                 }
@@ -229,13 +216,9 @@ namespace DataMatrix.net
 
         int DecodeSchemeC40Text(int startIndex, int endIndex, DmtxScheme encScheme)
         {
-            int i;
-            int packed;
             int[] c40Values = new int[3];
-            C40TextState state = new C40TextState();
+            C40TextState state = new C40TextState {Shift = DmtxConstants.DmtxC40TextBasicSet, UpperShift = false};
 
-            state.Shift = DmtxConstants.DmtxC40TextBasicSet;
-            state.UpperShift = false;
 
             if (!(encScheme == DmtxScheme.DmtxSchemeC40 || encScheme == DmtxScheme.DmtxSchemeText))
             {
@@ -246,12 +229,13 @@ namespace DataMatrix.net
             {
 
                 /* FIXME Also check that ptr+1 is safe to access */
-                packed = (((int)this._code[startIndex]) << 8) | (int)this._code[startIndex + 1];
+                int packed = (this.Code[startIndex] << 8) | this.Code[startIndex + 1];
                 c40Values[0] = ((packed - 1) / 1600);
                 c40Values[1] = ((packed - 1) / 40) % 40;
                 c40Values[2] = (packed - 1) % 40;
                 startIndex += 2;
 
+                int i;
                 for (i = 0; i < 3; i++)
                 {
                     if (state.Shift == DmtxConstants.DmtxC40TextBasicSet)
@@ -327,7 +311,7 @@ namespace DataMatrix.net
                 }
 
                 /* Unlatch if codeword 254 follows 2 codewords in C40/Text encodation */
-                if (_code[startIndex] == DmtxConstants.DmtxCharTripletUnlatch)
+                if (this.Code[startIndex] == DmtxConstants.DmtxCharTripletUnlatch)
                     return startIndex + 1;
 
                 /* Unlatch is implied if only one codeword remains */
@@ -344,15 +328,15 @@ namespace DataMatrix.net
                 throw new ArgumentException("Invalid value: Exceeds range for conversion to byte");
             }
 
-            this._output[this._outputIdx] = (byte)value;
+            this.Output[this._outputIdx] = (byte)value;
 
-            if (state.UpperShift == true)
+            if (state.UpperShift)
             {
                 if (!(value >= 0 && value < 256))
                 {
                     throw new ArgumentException("Invalid value: Exceeds range for conversion to upper case character");
                 }
-                this._output[this._outputIdx] += 128;
+                this.Output[this._outputIdx] += 128;
             }
 
             this._outputIdx++;
@@ -363,21 +347,19 @@ namespace DataMatrix.net
 
         private int DecodeSchemeX12(int startIndex, int endIndex)
         {
-            int i;
-            int packed;
             int[] x12Values = new int[3];
 
             while (startIndex < endIndex)
             {
 
                 /* FIXME Also check that ptr+1 is safe to access */
-                packed = (((int)_code[startIndex]) << 8) | (int)_code[startIndex + 1];
+                int packed = (this.Code[startIndex] << 8) | this.Code[startIndex + 1];
                 x12Values[0] = ((packed - 1) / 1600);
                 x12Values[1] = ((packed - 1) / 40) % 40;
                 x12Values[2] = (packed - 1) % 40;
                 startIndex += 2;
 
-                for (i = 0; i < 3; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     if (x12Values[i] == 0)
                         PushOutputWord(13);
@@ -394,7 +376,7 @@ namespace DataMatrix.net
                 }
 
                 /* Unlatch if codeword 254 follows 2 codewords in C40/Text encodation */
-                if (_code[startIndex] == DmtxConstants.DmtxCharTripletUnlatch)
+                if (this.Code[startIndex] == DmtxConstants.DmtxCharTripletUnlatch)
                     return startIndex + 1;
 
                 /* Unlatch is implied if only one codeword remains */
@@ -407,7 +389,6 @@ namespace DataMatrix.net
 
         int DecodeSchemeEdifact(int startIndex, int endIndex)
         {
-            int i;
             byte[] unpacked = new byte[4];
 
             while (startIndex < endIndex)
@@ -416,12 +397,12 @@ namespace DataMatrix.net
                 /* FIXME Also check that ptr+2 is safe to access -- shouldn't be a
                    problem because I'm guessing you can guarantee there will always
                    be at least 3 error codewords */
-                unpacked[0] = (byte)((_code[startIndex] & 0xfc) >> 2);
-                unpacked[1] = (byte)((_code[startIndex] & 0x03) << 4 | (_code[startIndex + 1] & 0xf0) >> 4);
-                unpacked[2] = (byte)((_code[startIndex + 1] & 0x0f) << 2 | (_code[startIndex + 2] & 0xc0) >> 6);
-                unpacked[3] = (byte)(_code[startIndex + 2] & 0x3f);
+                unpacked[0] = (byte)((this.Code[startIndex] & 0xfc) >> 2);
+                unpacked[1] = (byte)((this.Code[startIndex] & 0x03) << 4 | (this.Code[startIndex + 1] & 0xf0) >> 4);
+                unpacked[2] = (byte)((this.Code[startIndex + 1] & 0x0f) << 2 | (this.Code[startIndex + 2] & 0xc0) >> 6);
+                unpacked[3] = (byte)(this.Code[startIndex + 2] & 0x3f);
 
-                for (i = 0; i < 4; i++)
+                for (int i = 0; i < 4; i++)
                 {
 
                     /* Advance input ptr (4th value comes from already-read 3rd byte) */
@@ -431,7 +412,7 @@ namespace DataMatrix.net
                     /* Test for unlatch condition */
                     if (unpacked[i] == DmtxConstants.DmtxCharEdifactUnlatch)
                     {
-                        if (_output[_outputIdx] != 0)
+                        if (this.Output[_outputIdx] != 0)
                         {/* XXX dirty why? */
                             throw new Exception("Error decoding edifact scheme");
                         }
@@ -452,14 +433,12 @@ namespace DataMatrix.net
 
         int DecodeSchemeBase256(int startIndex, int endIndex)
         {
-            int d0, d1;
-            int idx;
             int tempEndIndex;
 
             /* Find positional index used for unrandomizing */
-            idx = startIndex + 1;
+            int idx = startIndex + 1;
 
-            d0 = UnRandomize255State(_code[startIndex++], idx++);
+            int d0 = UnRandomize255State(this.Code[startIndex++], idx++);
             if (d0 == 0)
             {
                 tempEndIndex = endIndex;
@@ -470,7 +449,7 @@ namespace DataMatrix.net
             }
             else
             {
-                d1 = UnRandomize255State(_code[startIndex++], idx++);
+                int d1 = UnRandomize255State(this.Code[startIndex++], idx++);
                 tempEndIndex = startIndex + (d0 - 249) * 250 + d1;
             }
 
@@ -481,7 +460,7 @@ namespace DataMatrix.net
 
             while (startIndex < tempEndIndex)
             {
-                PushOutputWord(UnRandomize255State(_code[startIndex++], idx++));
+                PushOutputWord(UnRandomize255State(this.Code[startIndex++], idx++));
             }
 
             return startIndex;
@@ -532,65 +511,26 @@ namespace DataMatrix.net
             }
 
             /* Data modules */
-            return (this._array[mappingRow * mappingCols + mappingCol] | DmtxConstants.DmtxModuleData);
+            return (this.Array[mappingRow * mappingCols + mappingCol] | DmtxConstants.DmtxModuleData);
         }
 
         #endregion
 
         #region Properties
-        internal int PadCount
-        {
-            get
-            {
-                return _padCount;
-            }
-            set
-            {
-                _padCount = value;
-            }
-        }
 
-        internal byte[] Array
-        {
-            get
-            {
-                return _array;
-            }
-            set
-            {
-                _array = value;
-            }
-        }
+        internal int PadCount { get; set; }
 
-        internal byte[] Code
-        {
-            get
-            {
-                return _code;
-            }
-            set
-            {
-                _code = value;
-            }
-        }
+        internal byte[] Array { get; set; }
 
-        internal byte[] Output
-        {
-            get
-            {
-                return _output;
-            }
-            set
-            {
-                _output = value;
-            }
-        }
+        internal byte[] Code { get; set; }
+
+        internal byte[] Output { get; set; }
 
         internal int ArraySize
         {
             get
             {
-                return _array.Length;
+                return this.Array.Length;
             }
         }
 
@@ -598,7 +538,7 @@ namespace DataMatrix.net
         {
             get
             {
-                return _code.Length;
+                return this.Code.Length;
             }
         }
 
@@ -606,7 +546,7 @@ namespace DataMatrix.net
         {
             get
             {
-                return _output.Length;
+                return this.Output.Length;
             }
         }
         #endregion

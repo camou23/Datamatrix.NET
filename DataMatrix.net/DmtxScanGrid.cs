@@ -29,8 +29,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataMatrix.net
 {
@@ -60,7 +58,6 @@ namespace DataMatrix.net
         #region Constructors
         internal DmtxScanGrid(DmtxDecode dec)
         {
-            int scale = dec.Scale;
             int smallestFeature = dec.ScanGap;
             this._xMin = dec.XMin;
             this._xMax = dec.XMax;

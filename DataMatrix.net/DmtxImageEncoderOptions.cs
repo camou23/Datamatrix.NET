@@ -37,55 +37,33 @@ namespace DataMatrix.net
 {
     public class DmtxImageEncoderOptions
     {
-        #region Fields
-        int _marginSize = 10;
-        int _moduleSize = 5;
-        DmtxScheme _scheme = DmtxScheme.DmtxSchemeAscii;
-        DmtxSymbolSize _sizeIdx = DmtxSymbolSize.DmtxSymbolSquareAuto;
-        Color _color = Color.Black;
-        Color _bgColor = Color.White;
+        #region Constructor
+
+        public DmtxImageEncoderOptions()
+        {
+            BackColor = Color.White;
+            ForeColor = Color.Black;
+            SizeIdx = DmtxSymbolSize.DmtxSymbolSquareAuto;
+            Scheme = DmtxScheme.DmtxSchemeAscii;
+            ModuleSize = 5;
+            MarginSize = 10;
+        }
+
         #endregion
 
         #region Properties
 
-        public int MarginSize
-        {
-            get { return _marginSize; }
-            set { _marginSize = value; }
-        }
+        public int MarginSize { get; set; }
 
-        public int ModuleSize
-        {
-            get { return _moduleSize; }
-            set { _moduleSize = value; }
-        }
+        public int ModuleSize { get; set; }
 
-        public DmtxScheme Scheme
-        {
-            get { return _scheme; }
-            set { _scheme = value; }
-        }
+        public DmtxScheme Scheme { get; set; }
 
-        public DmtxSymbolSize SizeIdx
-        {
-            get { return _sizeIdx; }
-            set { _sizeIdx = value; }
-        }
+        public DmtxSymbolSize SizeIdx { get; set; }
 
-        public Color ForeColor
-        {
-            get { return _color; }
-            set
-            {
-                _color = value;
-            }
-        }
+        public Color ForeColor { get; set; }
 
-        public Color BackColor
-        {
-            get { return _bgColor; }
-            set { _bgColor = value; }
-        }
+        public Color BackColor { get; set; }
 
         #endregion
     }

@@ -28,10 +28,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
  
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DataMatrix.net
 {
     internal struct DmtxTriplet
@@ -40,14 +36,7 @@ namespace DataMatrix.net
 
         internal byte[] Value
         {
-            get
-            {
-                if (_value == null)
-                {
-                    _value = new byte[3];
-                }
-                return _value;
-            }
+            get { return this._value ?? (this._value = new byte[3]); }
         }
     }
 
@@ -61,14 +50,7 @@ namespace DataMatrix.net
 
         internal byte[] Value
         {
-            get
-            {
-                if (_value == null)
-                {
-                    _value = new byte[4];
-                }
-                return _value;
-            }
+            get { return this._value ?? (this._value = new byte[4]); }
         }
     }
 }

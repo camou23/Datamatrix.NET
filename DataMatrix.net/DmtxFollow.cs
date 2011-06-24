@@ -28,18 +28,12 @@ Contact: Michael Faschinger - michfasch@gmx.at
  
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DataMatrix.net
 {
     internal struct DmtxFollow
     {
         #region Fields
-        byte[] _ptr;
-        int _step;
-        DmtxPixelLoc _loc;
+
         int _ptrIndex;
         #endregion
 
@@ -56,61 +50,32 @@ namespace DataMatrix.net
         {
             get
             {
-                return _ptr[_ptrIndex];
+                return this.Ptr[_ptrIndex];
             }
             set
             {
-                _ptr[_ptrIndex] = value;
+                this.Ptr[_ptrIndex] = value;
             }
         }
 
-        internal Byte[] Ptr
-        {
-            get
-            {
-                return _ptr;
-            }
-            set
-            {
-                _ptr = value;
-            }
-        }
+        internal byte[] Ptr { get; set; }
 
         internal byte Neighbor
         {
             get
             {
-                return _ptr[_ptrIndex];
+                return this.Ptr[_ptrIndex];
             }
             set
             {
-                _ptr[_ptrIndex] = value;
+                this.Ptr[_ptrIndex] = value;
             }
         }
 
-        internal int Step
-        {
-            get
-            {
-                return _step;
-            }
-            set
-            {
-                _step = value;
-            }
-        }
+        internal int Step { get; set; }
 
-        internal DmtxPixelLoc Loc
-        {
-            get
-            {
-                return _loc;
-            }
-            set
-            {
-                _loc = value;
-            }
-        }
+        internal DmtxPixelLoc Loc { get; set; }
+
         #endregion
     }
 }

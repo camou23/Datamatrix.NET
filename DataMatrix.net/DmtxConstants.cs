@@ -28,10 +28,6 @@ Contact: Michael Faschinger - michfasch@gmx.at
  
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DataMatrix.net
 {
     internal static class DmtxConstants

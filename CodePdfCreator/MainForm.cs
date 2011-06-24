@@ -29,17 +29,10 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
 
 namespace DataMatrixCreator
 {
@@ -57,12 +50,12 @@ namespace DataMatrixCreator
             comboBoxCodeType.Items.Add(CodeType.PDF417.ToString());
             comboBoxCodeType.Items.Add(CodeType.Postnet.ToString());
             comboBoxCodeType.SelectedIndex = 0;
-        }
+        } 
 
         private void GenerateCodes(string code, string startVal, int count, float codeWidth, float codeHeight, int maxColCount, int maxRowCount, string fileName, CodeType codeType, CountType countType, float verticalMargin, float horizontalMargin, float borderTop, float borderLeft, float borderRight, float borderBottom)
         {
             Document doc = new Document();
-            PdfWriter writer = null;
+            PdfWriter writer;
             try
             {
                 if (File.Exists(fileName))
@@ -150,15 +143,13 @@ namespace DataMatrixCreator
                     break;
                 case CountType.Alphabetical:
                     break;
-                default:
-                    break;
             }
             return code;
         }
 
         private void AddCode(Document doc, string text, float targetWidth, float targetHeight, float absoluteX, float absoluteY, CodeType codeType, PdfContentByte pcb)
         {
-            iTextSharp.text.Image image = GetImage(text, codeType, pcb);
+            Image image = GetImage(text, codeType, pcb);
             float widthRatio = image.Width / targetWidth;
             float heightRatio = image.Height / targetHeight;
             if (widthRatio > heightRatio)
@@ -173,49 +164,36 @@ namespace DataMatrixCreator
             doc.Add(image);
         }
 
-        private iTextSharp.text.Image GetImage(string text, CodeType codeType, PdfContentByte pcb)
+        private Image GetImage(string text, CodeType codeType, PdfContentByte pcb)
         {
             switch (codeType)
             {
                 case CodeType.Code128:
-                    Barcode128 barcode128 = new Barcode128();
-                    barcode128.AltText = text;
-                    barcode128.Code = text;
+                    Barcode128 barcode128 = new Barcode128 {AltText = text, Code = text};
                     return barcode128.CreateImageWithBarcode(pcb, iTextSharp.text.Color.BLACK, iTextSharp.text.Color.BLACK);
                 case CodeType.Code39:
-                    Barcode39 barcode39 = new Barcode39();
-                    barcode39.Code = text;
-                    barcode39.AltText = text;
+                    Barcode39 barcode39 = new Barcode39 {Code = text, AltText = text};
                     return barcode39.CreateImageWithBarcode(pcb, iTextSharp.text.Color.BLACK, iTextSharp.text.Color.BLACK);
                 case CodeType.Codabar:
-                    BarcodeCodabar barcodeCodabar = new BarcodeCodabar();
-                    barcodeCodabar.Code = text;
-                    barcodeCodabar.AltText = text;
+                    BarcodeCodabar barcodeCodabar = new BarcodeCodabar {Code = text, AltText = text};
                     return barcodeCodabar.CreateImageWithBarcode(pcb, iTextSharp.text.Color.BLACK, iTextSharp.text.Color.BLACK);
                 case CodeType.Datamatrix:
                     BarcodeDatamatrix barcodeDatamatrix = new BarcodeDatamatrix();
                     barcodeDatamatrix.Generate(text);
                     return barcodeDatamatrix.CreateImage();
                 case CodeType.EAN:
-                    BarcodeEAN barcodeEAN = new BarcodeEAN();
-                    barcodeEAN.CodeType = Barcode.EAN13;
-                    barcodeEAN.Code = text;
-                    barcodeEAN.AltText = text;
+                    BarcodeEAN barcodeEAN = new BarcodeEAN {CodeType = Barcode.EAN13, Code = text, AltText = text};
                     return barcodeEAN.CreateImageWithBarcode(pcb, iTextSharp.text.Color.BLACK, iTextSharp.text.Color.BLACK);
                 case CodeType.Inter25:
-                    BarcodeInter25 barcodeInter25 = new BarcodeInter25();
-                    barcodeInter25.AltText = text;
-                    barcodeInter25.Code = text;
-                    barcodeInter25.GenerateChecksum = true;
+                    BarcodeInter25 barcodeInter25 = new BarcodeInter25
+                                                        {AltText = text, Code = text, GenerateChecksum = true};
                     return barcodeInter25.CreateImageWithBarcode(pcb, iTextSharp.text.Color.BLACK, iTextSharp.text.Color.BLACK);
                 case CodeType.PDF417:
                     BarcodePDF417 barcodePDF417 = new BarcodePDF417();
                     barcodePDF417.SetText(text);
                     return barcodePDF417.GetImage();
                 case CodeType.Postnet:
-                    BarcodePostnet barcodePostnet = new BarcodePostnet();
-                    barcodePostnet.AltText = text;
-                    barcodePostnet.Code = text;
+                    BarcodePostnet barcodePostnet = new BarcodePostnet {AltText = text, Code = text};
                     return barcodePostnet.CreateImageWithBarcode(pcb, iTextSharp.text.Color.BLACK, iTextSharp.text.Color.BLACK);
             }
             return null;
@@ -228,7 +206,6 @@ namespace DataMatrixCreator
             Codabar,
             Datamatrix,
             EAN,
-            BarcodeEANSUPP,
             Inter25,
             PDF417,
             Postnet
@@ -241,7 +218,7 @@ namespace DataMatrixCreator
             Alphabetical
         }
 
-        private void buttonGenerate_Click(object sender, EventArgs e)
+        private void ButtonGenerateClick(object sender, EventArgs e)
         {
             try
             {

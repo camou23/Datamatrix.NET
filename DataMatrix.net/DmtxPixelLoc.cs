@@ -36,35 +36,12 @@ namespace DataMatrix.net
 {
     internal struct DmtxPixelLoc
     {
-        #region Fields
-        int _x;
-        int _y;
-        #endregion
-
         #region Properties
-        internal int X
-        {
-            get
-            {
-                return _x;
-            }
-            set
-            {
-                _x = value;
-            }
-        }
 
-        internal int Y
-        {
-            get
-            {
-                return _y;
-            }
-            set
-            {
-                _y = value;
-            }
-        }
+        internal int X { get; set; }
+
+        internal int Y { get; set; }
+
         #endregion
     }
 }

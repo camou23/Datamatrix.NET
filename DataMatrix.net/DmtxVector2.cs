@@ -29,29 +29,22 @@ Contact: Michael Faschinger - michfasch@gmx.at
 */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataMatrix.net
 {
     internal class DmtxVector2
     {
-        #region Fields
-        private double _x;
-        private double _y;
-        #endregion
-
         #region Constructors
         internal DmtxVector2()
         {
-            _x = 0.0;
-            _y = 0.0;
+            this.X = 0.0;
+            this.Y = 0.0;
         }
 
         internal DmtxVector2(double x, double y)
         {
-            _x = x;
-            _y = y;
+            this.X = x;
+            this.Y = y;
         }
         #endregion
 
@@ -81,7 +74,7 @@ namespace DataMatrix.net
         #region Methods
         internal double Cross(DmtxVector2 v2)
         {
-            return (this._x * v2._y - this._y * v2._x);
+            return (this.X * v2.Y - this.Y * v2.X);
         }
 
         internal double Norm()
@@ -91,19 +84,19 @@ namespace DataMatrix.net
             {
                 return -1.0; // FIXXXME: This doesn't look clean, as noted in original dmtx source
             }
-            this._x /= mag;
-            this._y /= mag;
+            this.X /= mag;
+            this.Y /= mag;
             return mag;
         }
 
         internal double Dot(DmtxVector2 v2)
         {
-            return Math.Sqrt(_x * v2._x + _y * v2._y);
+            return Math.Sqrt(this.X * v2.X + this.Y * v2.Y);
         }
 
         internal double Mag()
         {
-            return Math.Sqrt(this._x * this._x + this._y * this._y);
+            return Math.Sqrt(this.X * this.X + this.Y * this.Y);
         }
 
         internal double DistanceFromRay2(DmtxRay2 ray)
@@ -141,37 +134,19 @@ namespace DataMatrix.net
             {
                 throw new ArgumentException("PointAlongRay: The ray's V vector must be a unit vector");
             }
-            DmtxVector2 tmp = new DmtxVector2(ray.V._x * t, ray.V._y * t);
-            this._x = ray.P._x + tmp._x;
-            this._y = ray.P._y + tmp._y;
+            DmtxVector2 tmp = new DmtxVector2(ray.V.X * t, ray.V.Y * t);
+            this.X = ray.P.X + tmp.X;
+            this.Y = ray.P.Y + tmp.Y;
             return true;
         }
         #endregion
 
         #region Properties
-        internal double X
-        {
-            get
-            {
-                return _x;
-            }
-            set
-            {
-                _x = value;
-            }
-        }
 
-        internal double Y
-        {
-            get
-            {
-                return _y;
-            }
-            set
-            {
-                _y = value;
-            }
-        }
+        internal double X { get; set; }
+
+        internal double Y { get; set; }
+
         #endregion
     }
 }
