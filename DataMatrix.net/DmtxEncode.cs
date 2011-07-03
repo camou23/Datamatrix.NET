@@ -1364,7 +1364,7 @@ namespace DataMatrix.net
                 int prevIndex = (channel.CurrentLength - 12) / 12;
                 byte prevValue = (byte)(channel.EncodedWords[prevIndex] - 1);
 
-                byte prevPrevValue = (byte)((prevIndex > channel.FirstCodeWord / 12) ? channel.EncodedWords[prevIndex - 1] : 0);
+                byte prevPrevValue = ((prevIndex > channel.FirstCodeWord / 12) ? channel.EncodedWords[prevIndex - 1] : (byte)0);
 
                 if (prevPrevValue != 235 && IsDigit(prevValue))
                 {

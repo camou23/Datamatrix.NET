@@ -78,7 +78,14 @@ namespace DataMatrixTest
             TestRawEncoder("HELLO WORLD");
             new DmtxImageEncoder().EncodeImage("HELLO WORLD").Save("helloWorld.png");
 
-            Console.Read();
+            for(int i = 1; i < 10; i++)
+            {
+                var encodedData = Guid.NewGuid().ToString();
+                Bitmap source = encoder.EncodeImage(encodedData);
+                var decodedData = decoder.DecodeImage(source);
+                if(decodedData.Count != 1 || decodedData[0] != encodedData)
+                    throw new Exception("Encoding or decoding failed!");
+            }
         }
 
         private static void TestRawEncoder(string text)

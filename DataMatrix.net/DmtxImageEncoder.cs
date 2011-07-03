@@ -189,18 +189,12 @@ namespace DataMatrix.net
         internal static Bitmap CopyDataToBitmap(byte[] data, int width, int height)
         {
             data = InsertPaddingBytes(data, width, height, 24);
-            int stride = 4 * ((width * 24 + 31) / 32);
-            #if !WINCE
-            GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            Bitmap bmp = new Bitmap(width, height, stride, PixelFormat.Format24bppRgb, dataHandle.AddrOfPinnedObject());
-            return bmp;
-            #else
+
             Bitmap bmp = new Bitmap(width, height);
             BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
             Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
             bmp.UnlockBits(bmpData);
             return bmp;
-            #endif
         }
 
         private static byte[] InsertPaddingBytes(byte[] data, int width, int height, int bitsPerPixel)
