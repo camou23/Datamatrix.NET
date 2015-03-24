@@ -272,7 +272,7 @@ namespace DataMatrix.net
             topLeft *= reg.Fit2Raw;
             topRight *= reg.Fit2Raw;
             bottomLeft *= reg.Fit2Raw;
-            bottomLeft *= reg.Fit2Raw;
+            bottomRight *= reg.Fit2Raw;
 
             pxTopLeft.X = (int)(0.5 + topLeft.X);
             pxTopLeft.Y = (int)(0.5 + topLeft.Y);
