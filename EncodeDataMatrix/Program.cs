@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.Text;
 using DataMatrix.net;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 
 namespace EncodeDataMatrix
@@ -220,19 +221,19 @@ namespace EncodeDataMatrix
                 throw new ArgumentException("Invalid color string!");
             }
             int red, green, blue;
-            bool parseSuccessful = int.TryParse(colorAsString.Substring(0, 2), out red);
+            bool parseSuccessful = int.TryParse(colorAsString.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out red);
             if (!parseSuccessful)
             {
                 Console.WriteLine("Invalid color string!");
                 throw new ArgumentException("Invalid color string!");
             }
-            parseSuccessful = int.TryParse(colorAsString.Substring(2, 2), out green);
+            parseSuccessful = int.TryParse(colorAsString.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out green);
             if (!parseSuccessful)
             {
                 Console.WriteLine("Invalid color string!");
                 throw new ArgumentException("Invalid color string!");
             }
-            parseSuccessful = int.TryParse(colorAsString.Substring(4, 2), out blue);
+            parseSuccessful = int.TryParse(colorAsString.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out blue);
             if (!parseSuccessful)
             {
                 Console.WriteLine("Invalid color string!");

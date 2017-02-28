@@ -122,7 +122,7 @@ namespace DataMatrix.net
             this._region.MappingCols = DmtxCommon.GetSymbolAttribute(DmtxSymAttribute.DmtxSymAttribMappingMatrixCols, sizeIdx);
 
             /* Allocate memory for message and array */
-            this._message = new DmtxMessage(sizeIdx, DmtxFormat.Matrix) {PadCount = padCount};
+            this._message = new DmtxMessage(sizeIdx, DmtxFormat.Matrix) { PadCount = padCount };
             for (int i = 0; i < dataWordCount; i++)
             {
                 this._message.Code[i] = buf[i];
@@ -150,7 +150,7 @@ namespace DataMatrix.net
             byte[] pxl = new byte[width * height * (bitsPerPixel / 8) + this._rowPadBytes];
 
             this._image = new DmtxImage(pxl, width, height, this._pixelPacking)
-                              {ImageFlip = this._imageFlip, RowPadBytes = this._rowPadBytes};
+            { ImageFlip = this._imageFlip, RowPadBytes = this._rowPadBytes };
 
             /* Insert finder and aligment pattern modules */
             if (encodeRaw)
@@ -337,9 +337,11 @@ namespace DataMatrix.net
             int rowSize = this._image.RowSizeBytes;
             int height = this._image.Height;
 
-            for (int pxlIndex = 0; pxlIndex < rowSize * height; pxlIndex++)
+            for (int pxlIndex = 0; pxlIndex < rowSize * height - 2; pxlIndex += 3)
             {
-                this._image.Pxl[pxlIndex] = 0xff;
+                this._image.Pxl[pxlIndex] = backColor.HasValue ? backColor.Value.R : (byte)0xff;
+                this._image.Pxl[pxlIndex + 1] = backColor.HasValue ? backColor.Value.G : (byte)0xff;
+                this._image.Pxl[pxlIndex + 2] = backColor.HasValue ? backColor.Value.B : (byte)0xff;
             }
 
             for (symbolRow = 0; symbolRow < this._region.SymbolRows; symbolRow++)
@@ -974,7 +976,7 @@ namespace DataMatrix.net
                 int ptrIndex = channel.InputIndex;
 
                 int tripletCount = 0;
-                for (; ; )
+                for (;;)
                 {
 
                     /* Fill array with at least 3 values (the minimum necessary to
@@ -1087,7 +1089,7 @@ namespace DataMatrix.net
                 {
                     return 0;
                 }
-                
+
                 outputWords[count++] = DmtxConstants.DmtxCharTripletShift2;
                 outputWords[count++] = 30;
                 inputWord -= 128;
